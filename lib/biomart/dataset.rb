@@ -1,12 +1,13 @@
 module Biomart
   class Dataset
+    include Biomart
+    
     attr_reader :name, :display_name, :visible, :filters, :attributes
     
-    def initialize( server, args )
-      if server.is_a? String
-        @server = Server.new(server)
-      else
-        @server = server
+    def initialize( url, args )
+      @url = url or raise ArgumentError, "must pass :url"
+      unless @url =~ /martservice/
+        @url = @url + "/martservice"
       end
       
       @name         = args["name"]
@@ -22,7 +23,8 @@ module Biomart
     end
     
     def fetch_configuration
-      document = REXML::Document.new( @server.request( 'GET', { :type => 'configuration', :dataset => @name } ) )
+      url = @url + "?type=configuration&dataset=#{@name}"
+      document = REXML::Document.new( request( :url => url ) )
       
       REXML::XPath.each( document, '//FilterDescription' ) do |f|
         @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )

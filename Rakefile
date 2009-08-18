@@ -14,7 +14,7 @@ $hoe = Hoe.spec 'biomart' do
   self.developer 'FIXME full name', 'FIXME email'
   self.post_install_message = 'PostInstall.txt' # TODO remove if post-install message not required
   self.rubyforge_name       = self.name # TODO this is default value
-  self.extra_deps         = [['restclient','>= 0'],['builder','>= 0']]
+  self.extra_deps         = [['builder','>= 0']]
 
 end
 
