@@ -20,12 +20,14 @@ module Biomart
         document = @server.request( 'GET', { :type => 'datasets', :mart => @name } )
         tsv_data = CSV.parse( document, "\t" )
         tsv_data.each do |t|
-          dataset_attr = {
-            :name         => t[1],
-            :display_name => t[2],
-            :visible      => t[3]
-          }
-          @datasets[ dataset_attr[:name] ] = Dataset.new( @server, dataset_attr )
+          if t[1]
+            dataset_attr = {
+              "name"         => t[1],
+              "displayName"  => t[2],
+              "visible"      => t[3]
+            }
+            @datasets[ dataset_attr["name"] ] = Dataset.new( @server, dataset_attr )
+          end
         end
       end
       return @datasets
