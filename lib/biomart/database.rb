@@ -10,9 +10,9 @@ module Biomart
         @url = @url + "/martservice"
       end
       
-      @name         = args["name"]
-      @display_name = args["displayName"]
-      @visible      = args["visible"] ? true : false
+      @name         = args["name"] || args[:name]
+      @display_name = args["displayName"] || args[:display_name]
+      @visible      = ( args["visible"] || args[:visible] ) ? true : false
       @datasets     = {}
     end
     
