@@ -29,8 +29,10 @@ module Biomart
   @@client = Net::HTTP
   
   def request( params={} )
-    if Biomart.proxy
-      proxy = URI.parse( Biomart.proxy )
+    if Biomart.proxy or ENV['http_proxy']
+      proxy_uri = Biomart.proxy
+      proxy_uri ||= ENV['http_proxy']
+      proxy = URI.parse( proxy_uri )
       @@client = Net::HTTP::Proxy( proxy.host, proxy.port )
     end
     
