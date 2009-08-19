@@ -36,6 +36,8 @@ module Biomart
       @@client = Net::HTTP::Proxy( proxy.host, proxy.port )
     end
     
+    params[:url] = URI.escape(params[:url])
+    
     if params[:method] === 'post'
       res = post( params )
     else
