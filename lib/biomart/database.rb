@@ -18,6 +18,21 @@ module Biomart
     
     def datasets
       if @datasets.empty?
+        fetch_datasets
+      end
+      return @datasets.keys
+    end
+    
+    def dataset_objects
+      if @datasets.empty?
+        fetch_datasets
+      end
+      return @datasets
+    end
+    
+    private
+    
+      def fetch_datasets
         url = @url + "?type=datasets&mart=#{@name}"
         document = request( :url => url )
         tsv_data = CSV.parse( document, "\t" )
@@ -32,8 +47,6 @@ module Biomart
           end
         end
       end
-      return @datasets
-    end
     
   end
 end

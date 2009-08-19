@@ -16,22 +16,47 @@ module Biomart
     
     def databases
       if @databases.empty?
-        url = @url + '?type=registry'
-        document = REXML::Document.new( request( :url => url ) )
-        REXML::XPath.each( document, "//MartURLLocation" ) do |d|
-          @databases[ d.attributes["name"] ] = Database.new( @url, d.attributes )
-        end
+        fetch_databases
+      end
+      return @databases.keys
+    end
+    
+    def database_objects
+      if @databases.empty?
+        fetch_databases
       end
       return @databases
     end
     
     def datasets
       if @datasets.empty?
-        self.databases.each do |name,database|
-          @datasets.merge!( database.datasets )
-        end
+        fetch_datasets
+      end
+      return @datasets.keys
+    end
+    
+    def dataset_objects
+      if @datasets.empty?
+        fetch_datasets
       end
       return @datasets
     end
+    
+    private
+    
+      def fetch_databases
+        url = @url + '?type=registry'
+        document = REXML::Document.new( request( :url => url ) )
+        REXML::XPath.each( document, "//MartURLLocation" ) do |d|
+          @databases[ d.attributes["name"] ] = Database.new( @url, d.attributes )
+        end
+      end
+      
+      def fetch_datasets
+        self.database_objects.each do |name,database|
+          @datasets.merge!( database.dataset_objects )
+        end
+      end
+    
   end
 end
