@@ -47,8 +47,32 @@ module Biomart
       return @attributes
     end
     
-    def count
+    def count( args={} )
+      count_xml = ""
+      xml = Builder::XmlMarkup.new( :target => count_xml, :indent => 2 )
       
+      xml.instruct!
+      xml.declare!( :DOCTYPE, :Query )
+      xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "0", :uniqueRows => "1", :count => "1", :datasetConfigVersion => "0.6" ) {
+        xml.Dataset( :name => @name, :interface => "default" ) {
+          
+          if args[:filters]
+            args[:filters].each do |name,value|
+              xml.Filter( :name => name, :value => value )
+            end
+          else
+            @filters.each do |name,filter|
+              if filter.default
+                xml.Filter( :name => name, :value => filter.default_value )
+              end
+            end
+          end
+          
+        }
+      }
+      
+      result = request( :method => 'post', :url => @url, :query => count_xml )
+      return result.to_i
     end
     
     def search
