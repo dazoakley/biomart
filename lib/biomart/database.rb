@@ -37,7 +37,7 @@ module Biomart
         document = request( :url => url )
         tsv_data = CSV.parse( document, "\t" )
         tsv_data.each do |t|
-          if t[1]
+          if t[1] and ( t[3] === "1" )
             dataset_attr = {
               "name"         => t[1],
               "displayName"  => t[2],

@@ -48,7 +48,9 @@ module Biomart
         url = @url + '?type=registry'
         document = REXML::Document.new( request( :url => url ) )
         REXML::XPath.each( document, "//MartURLLocation" ) do |d|
-          @databases[ d.attributes["name"] ] = Database.new( @url, d.attributes )
+          if d.attributes["visible"] === "1"
+            @databases[ d.attributes["name"] ] = Database.new( @url, d.attributes )
+          end
         end
       end
       
