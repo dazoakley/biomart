@@ -34,20 +34,23 @@ module Biomart
       @@client = Net::HTTP::Proxy( proxy.host, proxy.port )
     end
     
-    if params[:method].equal?('post')
-      
+    if params[:method] === 'post'
+      res = post( params )
     else
-      get( params )
+      res = get( params )
     end
+    
+    return res.body
   end
   
   def get( params={} )
     res = @@client.get_response( URI.parse(params[:url]) )
-    return res.body
+    return res
   end
   
   def post( params={} )
-    
+    res = @@client.post_form( URI.parse(params[:url]), { "query" => params[:query] } )
+    return res
   end
   
   class << self
