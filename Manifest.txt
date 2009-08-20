@@ -1,11 +1,16 @@
 History.txt
 Manifest.txt
-PostInstall.txt
 README.rdoc
 Rakefile
 lib/biomart.rb
+lib/biomart/attribute.rb
+lib/biomart/database.rb
+lib/biomart/dataset.rb
+lib/biomart/filter.rb
+lib/biomart/server.rb
 script/console
 script/destroy
 script/generate
 test/test_biomart.rb
 test/test_helper.rb
+test_script.rb

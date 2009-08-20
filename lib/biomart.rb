@@ -10,6 +10,7 @@ require "rubygems"
 require "builder"
 
 module Biomart
+  VERSION = "0.0.1"
   
   # Specialised classes for error reporting
   class BiomartError < StandardError

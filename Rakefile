@@ -11,11 +11,12 @@ Hoe.plugin :newgem
 # Generate all the Rake tasks
 # Run 'rake -T' to see list of generated tasks (from gem root directory)
 $hoe = Hoe.spec 'biomart' do
-  self.developer 'FIXME full name', 'FIXME email'
-  self.post_install_message = 'PostInstall.txt' # TODO remove if post-install message not required
-  self.rubyforge_name       = self.name # TODO this is default value
-  self.extra_deps         = [['builder','>= 0']]
-
+  self.developer      'Darren Oakley', 'daz.oakley@gmail.com'
+  self.rubyforge_name = self.name
+  self.url            = "http://github.com/dazoakley/biomart-ruby"
+  self.summary        = "A ruby API for interacting with Biomart services."
+  self.description    = "A ruby API for interacting with Biomart services."
+  self.extra_deps     = [['builder','>= 0']]
 end
 
 require 'newgem/tasks'
