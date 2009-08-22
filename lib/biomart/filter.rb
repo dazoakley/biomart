@@ -6,7 +6,7 @@ module Biomart
       @name          = args["internalName"]
       @display_name  = args["displayName"]
       @default       = args["defaultOn"] ? true : false
-      @default_value = args["default_value"]
+      @default_value = args["defaultValue"]
     end
     
   end
