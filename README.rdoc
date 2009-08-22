@@ -2,7 +2,7 @@
 
 http://biomart.rubyforge.org
 
-http://github.com/dazoakley/biomart-
+http://github.com/dazoakley/biomart
 
 Biomart provides a simple interface for working with Biomart servers 
 (see http://www.biomart.org for more info on Biomart itself), so you 
@@ -14,31 +14,51 @@ sudo gem install biomart
 
 == Usage
 
+Include the module in your code:
+
   require "rubygems"
   require "biomart"
   
-To generically connect to a Biomart server and have access to all of its 
+To basically connect to a Biomart server and have access to all of its 
 information and meta data:
   
   biomart = Biomart::Server.new( "http://www.biomart.org/biomart" )
-  
+
   # List all of the available datasets on this Biomart server
-  p biomart.datasets
-  
-  
-  
-  
-... More to come ...
-  
-  
-  
+  # (be patient - this will take a while on this server as there's 
+  # a lot there...)
+  p biomart.list_datasets
+
+  # Grab the "kermits" dataset
+  kermits = biomart.datasets["kermits"]
+
+  # List it's filters and attributes
+  p kermits.list_filters
+  p kermits.list_attributes
+
+  # Count the total number of records in the dataset
+  p kermits.count()
+
+  # Do a count with a filter added
+  p kermits.count( :filters => { "sponsor" => "EUCOMM" } )
+
+  # Do a search using the default filters and attributes 
+  # - usually not a good idea as this will return a LOT of data...
+  #p kermits.search()
+
+  # Do a search using some specific filters (but the default attributes)
+  p kermits.search( :filters => { "marker_symbol" => "Cbx1" } )
+
+  # Do a search with specific filters and attributes
+  p kermits.search( :filters => { "marker_symbol" => "Cbx1" }, :attributes => ["marker_symbol"] )
   
 Or if you know the dataset you wish to work with and would like to 
 just get on with things...
   
   htgt_targ = Biomart::Dataset.new( "http://www.sanger.ac.uk/htgt/biomart", { :name => "htgt_targ" } )
-  count = htgt_targ.count( :filters => { "is_eucomm" => "yes" } )
-  p count
+  p htgt_targ.count( :filters => { "is_eucomm" => "1" } )
+  
+  # etc. etc.
   
 See Biomart module and Class docs for more detail.
   
