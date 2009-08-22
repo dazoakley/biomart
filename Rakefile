@@ -13,7 +13,7 @@ Hoe.plugin :newgem
 $hoe = Hoe.spec 'biomart' do
   self.developer      'Darren Oakley', 'daz.oakley@gmail.com'
   self.rubyforge_name = self.name
-  self.url            = "http://github.com/dazoakley/biomart-ruby"
+  self.url            = "http://github.com/dazoakley/biomart"
   self.summary        = "A ruby API for interacting with Biomart services."
   self.description    = "A ruby API for interacting with Biomart services."
   self.extra_deps     = [['builder','>= 0']]

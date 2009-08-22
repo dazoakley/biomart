@@ -2,7 +2,7 @@
 
 http://biomart.rubyforge.org
 
-http://github.com/dazoakley/biomart-ruby
+http://github.com/dazoakley/biomart-
 
 Biomart provides a simple interface for working with Biomart servers 
 (see http://www.biomart.org for more info on Biomart itself), so you 
@@ -60,7 +60,7 @@ Written by Darren Oakley (daz dot oakley at gmail dot com)
 
 http://biomart.rubyforge.org
 
-http://github.com/dazoakley/biomart-ruby
+http://github.com/dazoakley/biomart
 
 == License
 
