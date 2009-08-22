@@ -17,6 +17,7 @@ $hoe = Hoe.spec 'biomart' do
   self.summary        = "A ruby API for interacting with Biomart services."
   self.description    = "A ruby API for interacting with Biomart services."
   self.extra_deps     = [['builder','>= 0']]
+  self.extra_rdoc_files = ["README.rdoc", "History.txt", "Manifest.txt"]
 end
 
 require 'newgem/tasks'
