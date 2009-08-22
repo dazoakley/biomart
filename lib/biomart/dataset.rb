@@ -20,43 +20,30 @@ module Biomart
       @exportables  = {}
     end
     
-    def fetch_configuration
-      url = @url + "?type=configuration&dataset=#{@name}"
-      document = REXML::Document.new( request( :url => url ) )
-      
-      REXML::XPath.each( document, '//FilterDescription' ) do |f|
-        @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
-      end
-      
-      REXML::XPath.each( document, '//AttributeDescription' ) do |a|
-        @attributes[ a.attributes["internalName"] ] = Attribute.new( a.attributes )
-      end
-    end
-    
     def filters
       if @filters.empty?
-        self.fetch_configuration
+        fetch_configuration()
       end
       return @filters
     end
     
     def list_filters
       if @filters.empty?
-        self.fetch_configuration
+        fetch_configuration()
       end
       return @filters.keys
     end
     
     def attributes
       if @attributes.empty?
-        self.fetch_configuration
+        fetch_configuration()
       end
       return @attributes
     end
     
     def list_attributes
       if @attributes.empty?
-        self.fetch_configuration
+        fetch_configuration()
       end
       return @attributes.keys
     end
@@ -67,6 +54,7 @@ module Biomart
       return result.to_i
     end
     
+    # 
     def search( args={} )
       response = request( :method => 'post', :url => @url, :query => generate_xml(args) )
       result   = process_tsv( response )
@@ -74,7 +62,7 @@ module Biomart
     end
     
     # Utility function to build the Biomart query XML
-    def generate_xml( args )
+    def generate_xml( args={} )
       biomart_xml = ""
       xml = Builder::XmlMarkup.new( :target => biomart_xml, :indent => 2 )
       
@@ -134,6 +122,23 @@ module Biomart
       end
       return data
     end
+    
+    private
+    
+      # Utility function to retrieve and process the configuration 
+      # xml for a dataset
+      def fetch_configuration
+        url = @url + "?type=configuration&dataset=#{@name}"
+        document = REXML::Document.new( request( :url => url ) )
+
+        REXML::XPath.each( document, '//FilterDescription' ) do |f|
+          @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
+        end
+
+        REXML::XPath.each( document, '//AttributeDescription' ) do |a|
+          @attributes[ a.attributes["internalName"] ] = Attribute.new( a.attributes )
+        end
+      end
     
   end
 end
