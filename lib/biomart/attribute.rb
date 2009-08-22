@@ -8,6 +8,5 @@ module Biomart
       @default      = args["default"] ? true : false
     end
     
-    
   end
 end

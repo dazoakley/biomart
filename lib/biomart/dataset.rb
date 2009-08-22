@@ -85,6 +85,9 @@ module Biomart
           
           if args[:filters]
             args[:filters].each do |name,value|
+              if value.is_a? Array
+                value = value.join(",")
+              end
               xml.Filter( :name => name, :value => value )
             end
           else
