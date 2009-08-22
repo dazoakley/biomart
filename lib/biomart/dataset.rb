@@ -40,6 +40,13 @@ module Biomart
       return @filters
     end
     
+    def list_filters
+      if @filters.empty?
+        self.fetch_configuration
+      end
+      return @filters.keys
+    end
+    
     def attributes
       if @attributes.empty?
         self.fetch_configuration
@@ -47,13 +54,33 @@ module Biomart
       return @attributes
     end
     
+    def list_attributes
+      if @attributes.empty?
+        self.fetch_configuration
+      end
+      return @attributes.keys
+    end
+    
     def count( args={} )
-      count_xml = ""
-      xml = Builder::XmlMarkup.new( :target => count_xml, :indent => 2 )
+      args.merge!({ :count => "1" })
+      result = request( :method => 'post', :url => @url, :query => generate_xml(args) )
+      return result.to_i
+    end
+    
+    def search( args={} )
+      response = request( :method => 'post', :url => @url, :query => generate_xml(args) )
+      result   = process_tsv( response )
+      return result
+    end
+    
+    # Utility function to build the Biomart query XML
+    def generate_xml( args )
+      biomart_xml = ""
+      xml = Builder::XmlMarkup.new( :target => biomart_xml, :indent => 2 )
       
       xml.instruct!
       xml.declare!( :DOCTYPE, :Query )
-      xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "0", :uniqueRows => "1", :count => "1", :datasetConfigVersion => "0.6" ) {
+      xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "1", :uniqueRows => "1", :count => args[:count], :datasetConfigVersion => "0.6" ) {
         xml.Dataset( :name => @name, :interface => "default" ) {
           
           if args[:filters]
@@ -61,9 +88,23 @@ module Biomart
               xml.Filter( :name => name, :value => value )
             end
           else
-            @filters.each do |name,filter|
+            self.filters.each do |name,filter|
               if filter.default
                 xml.Filter( :name => name, :value => filter.default_value )
+              end
+            end
+          end
+          
+          unless args[:count]
+            if args[:attributes]
+              args[:attributes].each do |name|
+                xml.Attribute( :name => name )
+              end
+            else
+              self.attributes.each do |name,attribute|
+                if attribute.default
+                  xml.Attribute( :name => name )
+                end
               end
             end
           end
@@ -71,43 +112,24 @@ module Biomart
         }
       }
       
-      result = request( :method => 'post', :url => @url, :query => count_xml )
-      return result.to_i
-    end
-    
-    def search
-      
-    end
-    
-    def xml
-      biomart_xml = ""
-      xml = Builder::XmlMarkup.new( :target => biomart_xml, :indent => 2 )
-
-      xml.instruct!
-      xml.declare!( :DOCTYPE, :Query )
-      xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "0", :uniqueRows => "1", :count => "", :datasetConfigVersion => "0.6" ) {
-        xml.Dataset( :name => @name, :interface => "default" ) {
-
-          #if filters_to_use
-          #  filters_to_use.each do |f|
-          #    xml.Filter( :name => f, :value => query )
-          #  end
-          #end
-          #
-          #if attributes_to_use
-          #  attributes_to_use.each do |a|
-          #    xml.Attribute( :name => a )
-          #  end
-          #else
-          #  self.attributes.each do |a|
-          #    xml.Attribute( :name => a )
-          #  end
-          #end
-
-        }
-      }
-
       return biomart_xml
+    end
+    
+    # Utility function to transform the tab-separated data retrieved 
+    # from the Biomart search query into a ruby array of hashes.
+    def process_tsv( tsv )
+      tsv_data = CSV.parse( tsv, "\t" )
+      headers  = tsv_data.shift()
+      data     = []
+      
+      tsv_data.each do |row|
+        tmp = {}
+        row.each_index do |index|
+          tmp[ headers[index] ] = row[index]
+        end
+        data.push(tmp)
+      end
+      return data
     end
     
   end

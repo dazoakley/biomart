@@ -16,14 +16,14 @@ module Biomart
       @datasets     = {}
     end
     
-    def datasets
+    def list_datasets
       if @datasets.empty?
         fetch_datasets
       end
       return @datasets.keys
     end
     
-    def dataset_objects
+    def datasets
       if @datasets.empty?
         fetch_datasets
       end

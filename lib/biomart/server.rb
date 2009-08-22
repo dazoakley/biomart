@@ -14,28 +14,28 @@ module Biomart
       @datasets  = {}
     end
     
-    def databases
+    def list_databases
       if @databases.empty?
         fetch_databases
       end
       return @databases.keys
     end
     
-    def database_objects
+    def databases
       if @databases.empty?
         fetch_databases
       end
       return @databases
     end
     
-    def datasets
+    def list_datasets
       if @datasets.empty?
         fetch_datasets
       end
       return @datasets.keys
     end
     
-    def dataset_objects
+    def datasets
       if @datasets.empty?
         fetch_datasets
       end
@@ -55,8 +55,8 @@ module Biomart
       end
       
       def fetch_datasets
-        self.database_objects.each do |name,database|
-          @datasets.merge!( database.dataset_objects )
+        self.databases.each do |name,database|
+          @datasets.merge!( database.datasets )
         end
       end
     
