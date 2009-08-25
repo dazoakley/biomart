@@ -13,4 +13,3 @@ script/destroy
 script/generate
 test/test_biomart.rb
 test/test_helper.rb
-test_script.rb
