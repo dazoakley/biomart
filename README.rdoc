@@ -42,15 +42,20 @@ information and meta data:
   # Do a count with a filter added
   p kermits.count( :filters => { "sponsor" => "EUCOMM" } )
 
-  # Do a search using the default filters and attributes 
-  # - usually not a good idea as this will return a LOT of data...
-  #p kermits.search()
+  # Do a search using the default filters and attributes
+  # - this will return a hash with :headers (an array of the headers) and :data (an array of arrays of results)
+  # Doing a search like this is generally a BAD idea as biomarts tend to hold a LOT of data... Unless you have time to kill...
+  p kermits.search()
 
   # Do a search using some specific filters (but the default attributes)
   p kermits.search( :filters => { "marker_symbol" => "Cbx1" } )
 
   # Do a search with specific filters and attributes
   p kermits.search( :filters => { "marker_symbol" => "Cbx1" }, :attributes => ["marker_symbol"] )
+  
+  # If you would like to retrieve a more useful results object - i.e. an array of hashes, where each 
+  # hash represents a row of results (keyed by the attribute name), add the :process_results argument
+  p kermits.search( :filters => { "marker_symbol" => "Cbx1" }, :process_results => true )
   
 Or if you know the dataset you wish to work with and would like to 
 just get on with things...

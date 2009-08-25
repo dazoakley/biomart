@@ -57,7 +57,8 @@ module Biomart
     # 
     def search( args={} )
       response = request( :method => 'post', :url => @url, :query => generate_xml(args) )
-      result   = process_tsv( response )
+      result   = process_tsv( args, response )
+      result   = convert_results_to_array_of_hashes( result ) if args[:process_results]
       return result
     end
     
@@ -68,7 +69,7 @@ module Biomart
       
       xml.instruct!
       xml.declare!( :DOCTYPE, :Query )
-      xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "1", :uniqueRows => "1", :count => args[:count], :datasetConfigVersion => "0.6" ) {
+      xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "0", :uniqueRows => "1", :count => args[:count], :datasetConfigVersion => "0.6" ) {
         xml.Dataset( :name => @name, :interface => "default" ) {
           
           if args[:filters]
@@ -107,20 +108,43 @@ module Biomart
     end
     
     # Utility function to transform the tab-separated data retrieved 
-    # from the Biomart search query into a ruby array of hashes.
-    def process_tsv( tsv )
-      tsv_data = CSV.parse( tsv, "\t" )
-      headers  = tsv_data.shift()
-      data     = []
+    # from the Biomart search query into a ruby object.
+    def process_tsv( args, tsv )
+      headers = []
       
-      tsv_data.each do |row|
+      if args[:attributes]
+        args[:attributes].each do |attribute|
+          headers.push(attribute)
+        end
+      else
+        self.attributes.each do |name,attribute|
+          if attribute.default
+            headers.push(name)
+          end
+        end
+      end
+      
+      return {
+        :headers => headers,
+        :data    => CSV.parse( tsv, "\t" )
+      }
+    end
+    
+    # Utility function to quickly convert a search result into an array of hashes
+    # (keyed by the attribute name) for easier processing - this is not done by 
+    # default on all searches as this can cause a large overhead on big data returns.
+    def convert_results_to_array_of_hashes( search_results )
+      result_objects = []
+      
+      search_results[:data].each do |row|
         tmp = {}
         row.each_index do |index|
-          tmp[ headers[index] ] = row[index]
+          tmp[ search_results[:headers][index] ] = row[index]
         end
-        data.push(tmp)
+        result_objects.push(tmp)
       end
-      return data
+      
+      return result_objects
     end
     
     private
@@ -131,10 +155,21 @@ module Biomart
         url = @url + "?type=configuration&dataset=#{@name}"
         document = REXML::Document.new( request( :url => url ) )
 
+        # Top-Level filters...
         REXML::XPath.each( document, '//FilterDescription' ) do |f|
-          @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
+          unless f.attributes["displayType"].eql? "container"
+            @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
+          end
         end
-
+        
+        # Filters nested inside containers...
+        REXML::XPath.each( document, '//FilterDescription/Option' ) do |f|
+          if f.attributes["displayType"] != nil
+            @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
+          end
+        end
+        
+        # Attributes are much simpler...
         REXML::XPath.each( document, '//AttributeDescription' ) do |a|
           @attributes[ a.attributes["internalName"] ] = Attribute.new( a.attributes )
         end
