@@ -93,4 +93,46 @@ class BiomartTest < Test::Unit::TestCase
       assert( search2.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters and attributes defined with processing) is not returning the correct info." )
     end
   end
+  
+  context "The Biomart module" do
+    setup do
+      @not_biomart = Biomart::Server.new('http://www.sanger.ac.uk')
+      @htgt_targ   = @htgt.datasets["htgt_targ"]
+      @bad_dataset = Biomart::Dataset.new( "http://www.sanger.ac.uk/htgt/biomart", { :name => "wibble" } )
+    end
+    
+    should "handle user/configuration errors (i.e. incorrect URLs etc)" do
+      begin
+        @not_biomart.list_databases
+      rescue Biomart::HTTPError => e
+        http_error = e
+      end
+      
+      assert( http_error.is_a?( Biomart::HTTPError ), "Biomart.request is not processing HTTP errors correctly." )
+    end
+    
+    should "handle biomart server errors gracefully" do
+      begin
+        @htgt_targ.count( :filters => { "wibbleblibbleblip" => "1" } )
+      rescue Biomart::BiomartFilterError => e
+        filter_error = e
+      end
+      
+      begin
+        @htgt_targ.search( :attributes => ["wibbleblibbleblip"] )
+      rescue Biomart::BiomartAttributeError => e
+        attribute_error = e
+      end
+      
+      begin
+        @bad_dataset.count()
+      rescue Biomart::BiomartDatasetError => e
+        dataset_error = e
+      end
+      
+      assert( filter_error.is_a?( Biomart::BiomartFilterError ), "Biomart.request is not handling Biomart filter errors correctly." )
+      assert( attribute_error.is_a?( Biomart::BiomartAttributeError ), "Biomart.request is not handling Biomart attribute errors correctly." )
+      assert( dataset_error.is_a?( Biomart::BiomartDatasetError ), "Biomart.request is not handling Biomart dataset errors correctly." )
+    end
+  end
 end

@@ -12,18 +12,19 @@ module Biomart
   # Specialised classes for error reporting
   class BiomartError < StandardError
     attr_reader :data
-
+    
     def initialize(data)
       @data = data
       super
     end
   end
-
-  class Unauthorized  < StandardError; end
-  class Unavailable   < StandardError; end
-  class NotFound      < StandardError; end
   
-  @@url = 'http://www.biomart.org/biomart/martservice'
+  class HTTPError             < StandardError; end
+  class BiomartFilterError    < BiomartError; end
+  class BiomartAttributeError < BiomartError; end
+  class BiomartDatasetError   < BiomartError; end
+  
+  @@url    = 'http://www.biomart.org/biomart/martservice'
   @@client = Net::HTTP
   
   def request( params={} )
@@ -40,6 +41,23 @@ module Biomart
       res = post( params )
     else
       res = get( params )
+    end
+    
+    # Process the response code/body to catch errors.
+    if res.code != "200"
+      raise HTTPError, "HTTP error #{res.code}, please check your biomart server and URL settings."
+    else
+      if res.body =~ /ERROR/
+        if res.body =~ /Filter (.+) NOT FOUND/
+          raise BiomartFilterError.new(res.body), "Biomart error. Filter #{$1} not found."
+        elsif res.body =~ /Attribute (.+) NOT FOUND/
+          raise BiomartAttributeError.new(res.body), "Biomart error. Attribute #{$1} not found."
+        elsif res.body =~ /Dataset (.+) NOT FOUND/
+          raise BiomartDatasetError.new(res.body), "Biomart error. Dataset #{$1} not found."
+        else
+          raise BiomartError.new(res.body), "Biomart error."
+        end
+      end
     end
     
     return res.body
