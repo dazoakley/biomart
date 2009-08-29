@@ -1,4 +1,6 @@
 module Biomart
+  # Class representation for a biomart attribute. 
+  # Will belong to a Biomart::Dataset.
   class Attribute
     attr_reader :name, :display_name, :default
     

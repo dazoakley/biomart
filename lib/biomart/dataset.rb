@@ -1,4 +1,6 @@
 module Biomart
+  # Class represetation for a biomart dataset.
+  # Can belong to a Biomart::Database and a Biomart::Server.
   class Dataset
     include Biomart
     
@@ -20,6 +22,8 @@ module Biomart
       @exportables  = {}
     end
     
+    # Returns a hash (keyed by the biomart 'internal_name' for the filter) 
+    # of all of the Biomart::Filter objects belonging to this dataset.
     def filters
       if @filters.empty?
         fetch_configuration()
@@ -27,6 +31,8 @@ module Biomart
       return @filters
     end
     
+    # Returns an array of the filter names (biomart 'internal_name') 
+    # for this dataset.
     def list_filters
       if @filters.empty?
         fetch_configuration()
@@ -34,6 +40,8 @@ module Biomart
       return @filters.keys
     end
     
+    # Returns a hash (keyed by the biomart 'internal_name' for the attribute) 
+    # of all of the Biomart::Attribute objects belonging to this dataset.
     def attributes
       if @attributes.empty?
         fetch_configuration()
@@ -41,6 +49,8 @@ module Biomart
       return @attributes
     end
     
+    # Returns an array of the attribute names (biomart 'internal_name') 
+    # for this dataset.
     def list_attributes
       if @attributes.empty?
         fetch_configuration()
@@ -48,17 +58,37 @@ module Biomart
       return @attributes.keys
     end
     
+    # Function to perform a Biomart count.  Returns an integer value for 
+    # the result of the count query.
+    #
+    # optional arguments:
+    #
+    # :filters::         hash of key-value pairs (filter => search term)
     def count( args={} )
       args.merge!({ :count => "1" })
       result = request( :method => 'post', :url => @url, :query => generate_xml(args) )
       return result.to_i
     end
     
+    # Function to perform a Biomart search.
     # 
+    # optional arguments:
+    #
+    # :filters::         hash of key-value pairs (filter => search term)
+    # :attributes::      array of attributes to retrieve
+    # :process_results:: true/false - convert search results to object
+    #
+    # By default will return a hash with the following:
+    # 
+    # :headers::        array of headers
+    # :data::           array of arrays containing search results
+    #
+    # But with the :process_results option will return an array of hashes, 
+    # where each hash represents a row of results (keyed by the attribute name).
     def search( args={} )
       response = request( :method => 'post', :url => @url, :query => generate_xml(args) )
       result   = process_tsv( args, response )
-      result   = convert_results_to_array_of_hashes( result ) if args[:process_results]
+      result   = conv_results_to_a_of_h( result ) if args[:process_results]
       return result
     end
     
@@ -107,46 +137,6 @@ module Biomart
       return biomart_xml
     end
     
-    # Utility function to transform the tab-separated data retrieved 
-    # from the Biomart search query into a ruby object.
-    def process_tsv( args, tsv )
-      headers = []
-      
-      if args[:attributes]
-        args[:attributes].each do |attribute|
-          headers.push(attribute)
-        end
-      else
-        self.attributes.each do |name,attribute|
-          if attribute.default
-            headers.push(name)
-          end
-        end
-      end
-      
-      return {
-        :headers => headers,
-        :data    => CSV.parse( tsv, "\t" )
-      }
-    end
-    
-    # Utility function to quickly convert a search result into an array of hashes
-    # (keyed by the attribute name) for easier processing - this is not done by 
-    # default on all searches as this can cause a large overhead on big data returns.
-    def convert_results_to_array_of_hashes( search_results )
-      result_objects = []
-      
-      search_results[:data].each do |row|
-        tmp = {}
-        row.each_index do |index|
-          tmp[ search_results[:headers][index] ] = row[index]
-        end
-        result_objects.push(tmp)
-      end
-      
-      return result_objects
-    end
-    
     private
     
       # Utility function to retrieve and process the configuration 
@@ -173,6 +163,46 @@ module Biomart
         REXML::XPath.each( document, '//AttributeDescription' ) do |a|
           @attributes[ a.attributes["internalName"] ] = Attribute.new( a.attributes )
         end
+      end
+      
+      # Utility function to transform the tab-separated data retrieved 
+      # from the Biomart search query into a ruby object.
+      def process_tsv( args, tsv )
+        headers = []
+
+        if args[:attributes]
+          args[:attributes].each do |attribute|
+            headers.push(attribute)
+          end
+        else
+          self.attributes.each do |name,attribute|
+            if attribute.default
+              headers.push(name)
+            end
+          end
+        end
+
+        return {
+          :headers => headers,
+          :data    => CSV.parse( tsv, "\t" )
+        }
+      end
+
+      # Utility function to quickly convert a search result into an array of hashes
+      # (keyed by the attribute name) for easier processing - this is not done by 
+      # default on all searches as this can cause a large overhead on big data returns.
+      def conv_results_to_a_of_h( search_results )
+        result_objects = []
+
+        search_results[:data].each do |row|
+          tmp = {}
+          row.each_index do |index|
+            tmp[ search_results[:headers][index] ] = row[index]
+          end
+          result_objects.push(tmp)
+        end
+
+        return result_objects
       end
     
   end

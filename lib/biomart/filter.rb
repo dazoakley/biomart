@@ -1,4 +1,6 @@
 module Biomart
+  # Class representation for a biomart filter. 
+  # Will belong to a Biomart::Dataset.
   class Filter
     attr_reader :name, :display_name, :default, :default_value
     

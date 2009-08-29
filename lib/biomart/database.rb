@@ -1,4 +1,6 @@
 module Biomart
+  # Class representation for a biomart database.
+  # Will contain many Biomart::Dataset objects, and belong to a Biomart::Server.
   class Database
     include Biomart
     
@@ -16,6 +18,8 @@ module Biomart
       @datasets     = {}
     end
     
+    # Returns an array of the dataset names (biomart 'name') 
+    # for this dataset.
     def list_datasets
       if @datasets.empty?
         fetch_datasets
@@ -23,6 +27,8 @@ module Biomart
       return @datasets.keys
     end
     
+    # Returns a hash (keyed by the biomart 'name' for the dataset) 
+    # of all of the Biomart::Dataset objects belonging to this server.
     def datasets
       if @datasets.empty?
         fetch_datasets
@@ -32,6 +38,8 @@ module Biomart
     
     private
     
+      # Utility method to do the webservice call to the biomart server 
+      # and collate/build the information about the datasets.
       def fetch_datasets
         url = @url + "?type=datasets&mart=#{@name}"
         document = request( :url => url )
