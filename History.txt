@@ -1,4 +1,7 @@
-=== 0.0.1 2009-08-17
+=== 0.1 2009-08-29
 
 * 1 major enhancement:
-  * Initial release
+  * Initial release:
+    * Basic gathering of information about a Biomart server.
+    * Counting functionality.
+    * Basic searching of a single dataset.

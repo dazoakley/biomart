@@ -2,6 +2,7 @@ History.txt
 Manifest.txt
 README.rdoc
 Rakefile
+biomart.gemspec
 lib/biomart.rb
 lib/biomart/attribute.rb
 lib/biomart/database.rb
@@ -11,5 +12,6 @@ lib/biomart/server.rb
 script/console
 script/destroy
 script/generate
+tasks/shoulda.rake
 test/test_biomart.rb
 test/test_helper.rb
