@@ -114,25 +114,32 @@ class BiomartTest < Test::Unit::TestCase
     should "handle biomart server errors gracefully" do
       begin
         @htgt_targ.count( :filters => { "wibbleblibbleblip" => "1" } )
-      rescue Biomart::BiomartFilterError => e
+      rescue Biomart::FilterError => e
         filter_error = e
       end
       
       begin
         @htgt_targ.search( :attributes => ["wibbleblibbleblip"] )
-      rescue Biomart::BiomartAttributeError => e
+      rescue Biomart::AttributeError => e
         attribute_error = e
       end
       
       begin
         @bad_dataset.count()
-      rescue Biomart::BiomartDatasetError => e
+      rescue Biomart::DatasetError => e
         dataset_error = e
       end
       
-      assert( filter_error.is_a?( Biomart::BiomartFilterError ), "Biomart.request is not handling Biomart filter errors correctly." )
-      assert( attribute_error.is_a?( Biomart::BiomartAttributeError ), "Biomart.request is not handling Biomart attribute errors correctly." )
-      assert( dataset_error.is_a?( Biomart::BiomartDatasetError ), "Biomart.request is not handling Biomart dataset errors correctly." )
+      begin
+        @bad_dataset.count()
+      rescue Biomart::BiomartError => e
+        general_error = e
+      end
+      
+      assert( filter_error.is_a?( Biomart::FilterError ), "Biomart.request is not handling Biomart filter errors correctly." )
+      assert( attribute_error.is_a?( Biomart::AttributeError ), "Biomart.request is not handling Biomart attribute errors correctly." )
+      assert( dataset_error.is_a?( Biomart::DatasetError ), "Biomart.request is not handling Biomart dataset errors correctly." )
+      assert( general_error.is_a?( Biomart::BiomartError ), "Biomart.request is not handling general Biomart errors correctly." )
     end
   end
 end
