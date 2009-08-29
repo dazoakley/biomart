@@ -7,7 +7,7 @@ require "rubygems"
 require "builder"
 
 module Biomart
-  VERSION = "0.0.1"
+  VERSION = "0.1.0"
   
   # This is the base Biomart error/exception class. Rescue it if 
   # you want to catch any exceptions that this code might raise.
