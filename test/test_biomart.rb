@@ -96,9 +96,16 @@ class BiomartTest < Test::Unit::TestCase
   
   context "The Biomart module" do
     setup do
-      @not_biomart = Biomart::Server.new('http://www.sanger.ac.uk')
-      @htgt_targ   = @htgt.datasets["htgt_targ"]
-      @bad_dataset = Biomart::Dataset.new( "http://www.sanger.ac.uk/htgt/biomart", { :name => "wibble" } )
+      @not_biomart  = Biomart::Server.new( "http://www.sanger.ac.uk" )
+      @htgt_targ    = @htgt.datasets["htgt_targ"]
+      @bad_dataset  = Biomart::Dataset.new( "http://www.sanger.ac.uk/htgt/biomart", { :name => "wibble" } )
+      @good_biomart = Biomart::Server.new( "http://www.sanger.ac.uk/htgt/biomart" )
+    end
+    
+    should "allow you to ping a server" do
+      assert( @good_biomart.alive?, "A good biomart does not respond 'true' to .alive?." )
+      assert( @htgt_targ.alive?, "A good biomart datasetdoes not respond 'true' to .alive?." )
+      assert_equal( false, @not_biomart.alive?, "A non-biomart server does not respond 'false' to .alive?." )
     end
     
     should "handle user/configuration errors (i.e. incorrect URLs etc)" do

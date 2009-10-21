@@ -52,6 +52,19 @@ module Biomart
       return @datasets
     end
     
+    # Simple heartbeat function to test that a Biomart server is online.
+    # Returns true/false.
+    def alive?
+      begin
+        @databases = {} # reset the databases store
+        self.list_databases
+      rescue Biomart::BiomartError => e
+        return false
+      else
+        return true
+      end
+    end
+    
     private
     
       # Utility method to do the webservice call to the biomart server 

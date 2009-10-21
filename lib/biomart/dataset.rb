@@ -137,6 +137,13 @@ module Biomart
       return biomart_xml
     end
     
+    # Simple heartbeat function to test that a Biomart server is online.
+    # Returns true/false.
+    def alive?
+      server = Biomart::Server.new( @url )
+      return server.alive?
+    end
+    
     private
     
       # Utility function to retrieve and process the configuration 
