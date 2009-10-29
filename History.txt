@@ -1,10 +1,8 @@
-=== 0.1.0 2009-08-29
+=== 0.1.2 2009-10-29
 
-* 1 major enhancement:
-  * Initial release:
-    * Basic gathering of information about a Biomart server.
-    * Counting functionality.
-    * Basic searching of a single dataset.
+* 1 major bugfix:
+  * Added in code to handle poorly formatted tab-separated data 
+    coming back from a biomart query.
 
 === 0.1.1 2009-10-21
 
@@ -13,8 +11,10 @@
     to allow a user to ping a biomart server to make sure it is online 
     and functioning as expected.
 
-=== 0.1.2 2009-10-29
+=== 0.1.0 2009-08-29
 
-* 1 major bugfix:
-  * Added in code to handle poorly formatted tab-separated data 
-    coming back from a biomart query.
+* 1 major enhancement:
+  * Initial release:
+    * Basic gathering of information about a Biomart server.
+    * Counting functionality.
+    * Basic searching of a single dataset.
