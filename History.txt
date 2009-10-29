@@ -5,3 +5,16 @@
     * Basic gathering of information about a Biomart server.
     * Counting functionality.
     * Basic searching of a single dataset.
+
+=== 0.1.1 2009-10-21
+
+* 1 minor enhancement:
+  * Addition of an .alive? function to the Server and Dataset classes 
+    to allow a user to ping a biomart server to make sure it is online 
+    and functioning as expected.
+
+=== 0.1.2 2009-10-29
+
+* 1 major bugfix:
+  * Added in code to handle poorly formatted tab-separated data 
+    coming back from a biomart query.
