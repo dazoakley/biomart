@@ -92,6 +92,25 @@ class BiomartTest < Test::Unit::TestCase
       assert( search2.first.is_a?( Hash ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array of hashes." )
       assert( search2.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters and attributes defined with processing) is not returning the correct info." )
     end
+    
+    should "handle search queries that will generate poorly formatted TSV data" do
+      search = @htgt_targ.search(
+        :filters => { "mgi_accession_id" => [ "MGI:1921569", "MGI:1913402", "MGI:1913300" ] },
+        :attributes => [
+          "is_eucomm", "is_komp_csd", "is_komp_regeneron", "is_norcomm",
+          "is_mgp", "mgi_accession_id", "marker_symbol", "ensembl_gene_id",
+          "status", "status_code", "status_type", "status_description",
+          "status_sequence", "pipeline_stage", "htgt_project_id", "bac",
+          "design_id", "design_plate", "design_well", "intvec_plate",
+          "intvec_well", "intvec_distribute", "targvec_plate", "targvec_well",
+          "targvec_distribute", "backbone", "cassette", "allele_name",
+          "escell_clone_name", "escell_distribute", "es_cell_line", "colonies_picked",
+          "is_latest_for_gene", "is_targeted_non_cond"
+        ]
+      )
+      assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash." )
+      assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array." )
+    end
   end
   
   context "The Biomart module" do

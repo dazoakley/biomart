@@ -175,7 +175,8 @@ module Biomart
       # Utility function to transform the tab-separated data retrieved 
       # from the Biomart search query into a ruby object.
       def process_tsv( args, tsv )
-        headers = []
+        headers     = []
+        parsed_data = []
 
         if args[:attributes]
           args[:attributes].each do |attribute|
@@ -189,12 +190,56 @@ module Biomart
           end
         end
 
+        begin
+          parsed_data = CSV.parse( tsv, "\t" )
+        rescue CSV::IllegalFormatError => e
+          parsed_data = parse_tsv_line_by_line( headers.size, tsv )
+        end
+        
         return {
           :headers => headers,
-          :data    => CSV.parse( tsv, "\t" )
+          :data    => parsed_data
         }
       end
-
+      
+      # Utility function to process TSV formatted data that raises errors. (Biomart 
+      # has a habit of serving out this...) First attempts to use the CSV modules 
+      # 'parse_line' function to read in the data, if that fails, tries to use split 
+      # to recover the data.
+      def parse_tsv_line_by_line( expected_row_size, tsv )
+        parsed_data = []
+        
+        data_by_line = tsv.split("\n")
+        data_by_line.each do |line|
+          elements = CSV::parse_line( line, "\t" )
+          
+          if elements.size == 0
+            # This is a bad line (causing the above Exception), try and use split to recover.
+            # Alse add an empty value as split will miss the final value...
+            elements = line.split("\t")
+            elements.push(nil)
+            
+            # Substitute blank strings for nils
+            elements.map! do |elem|
+              if elem === ""
+                nil
+              else
+                elem
+              end
+            end
+            
+            # Add a safety clause...
+            if elements.size === expected_row_size
+              parsed_data.push(elements)
+            end
+          else
+            parsed_data.push(elements)
+          end
+        end
+        
+        return parsed_data
+      end
+      
       # Utility function to quickly convert a search result into an array of hashes
       # (keyed by the attribute name) for easier processing - this is not done by 
       # default on all searches as this can cause a large overhead on big data returns.
