@@ -1,3 +1,8 @@
+=== 0.1.3 2009-10-30
+
+* 1 major bugfix:
+  * Ruby 1.9 compatibility added.
+
 === 0.1.2 2009-10-29
 
 * 1 major bugfix:

@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{biomart}
-  s.version = "0.1.2"
+  s.version = "0.1.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Darren Oakley"]
-  s.date = %q{2009-10-29}
+  s.date = %q{2009-10-30}
   s.description = %q{A ruby API for interacting with Biomart services.}
   s.email = ["daz.oakley@gmail.com"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
