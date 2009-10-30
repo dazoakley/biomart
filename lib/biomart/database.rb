@@ -43,7 +43,16 @@ module Biomart
       def fetch_datasets
         url = @url + "?type=datasets&mart=#{@name}"
         document = request( :url => url )
-        tsv_data = CSV.parse( document, "\t" )
+        tsv_data = []
+        
+        if CSV.const_defined? :Reader
+          # Ruby < 1.9 CSV code
+          tsv_data = CSV.parse( document, "\t" )
+        else
+          # Ruby >= 1.9 CSV code
+          tsv_data = CSV.parse( document, { :col_sep => "\t" } )
+        end
+        
         tsv_data.each do |t|
           if t[1] and ( t[3] === "1" )
             dataset_attr = {

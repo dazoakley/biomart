@@ -190,10 +190,21 @@ module Biomart
           end
         end
 
-        begin
-          parsed_data = CSV.parse( tsv, "\t" )
-        rescue CSV::IllegalFormatError => e
-          parsed_data = parse_tsv_line_by_line( headers.size, tsv )
+        parsed_data = []
+        if CSV.const_defined? :Reader
+          # Ruby < 1.9 CSV code
+          begin
+            parsed_data = CSV.parse( tsv, "\t" )
+          rescue CSV::IllegalFormatError => e
+            parsed_data = parse_tsv_line_by_line( headers.size, tsv )
+          end
+        else
+          # Ruby >= 1.9 CSV code
+          begin
+            parsed_data = CSV.parse( tsv, { :col_sep => "\t" } )
+          rescue CSV::MalformedCSVError => e
+            parsed_data = parse_tsv_line_by_line( headers.size, tsv )
+          end
         end
         
         return {
@@ -211,7 +222,19 @@ module Biomart
         
         data_by_line = tsv.split("\n")
         data_by_line.each do |line|
-          elements = CSV::parse_line( line, "\t" )
+          elements = []
+          
+          if CSV.const_defined? :Reader
+            # Ruby < 1.9 CSV code
+            elements = CSV::parse_line( line, "\t" )
+          else
+            # Ruby >= 1.9 CSV code
+            begin
+              elements = CSV::parse_line( line, { :col_sep => "\t" } )
+            rescue CSV::MalformedCSVError => e
+              elements = []
+            end
+          end
           
           if elements.size == 0
             # This is a bad line (causing the above Exception), try and use split to recover.
