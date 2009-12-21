@@ -100,12 +100,12 @@ class BiomartTest < Test::Unit::TestCase
           "is_eucomm", "is_komp_csd", "is_komp_regeneron", "is_norcomm",
           "is_mgp", "mgi_accession_id", "marker_symbol", "ensembl_gene_id",
           "status", "status_code", "status_type", "status_description",
-          "status_sequence", "pipeline_stage", "htgt_project_id", "bac",
+          "status_sequence", "pipeline_stage", "ikmc_project_id", "bac",
           "design_id", "design_plate", "design_well", "intvec_plate",
           "intvec_well", "intvec_distribute", "targvec_plate", "targvec_well",
           "targvec_distribute", "backbone", "cassette", "allele_name",
-          "escell_clone_name", "escell_distribute", "es_cell_line", "colonies_picked",
-          "is_latest_for_gene", "is_targeted_non_cond"
+          "escell_clone", "escell_distribute", "escell_line", "colonies_picked",
+          "is_latest_for_gene", "targeted_trap"
         ]
       )
       assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash." )
