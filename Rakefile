@@ -2,7 +2,6 @@ require "rubygems"
 gem "hoe", ">= 2.1.0"
 require "hoe"
 require "fileutils"
-require "metric_fu"
 require "./lib/biomart"
 
 Hoe.plugin :newgem
@@ -23,24 +22,7 @@ $hoe = Hoe.spec "biomart" do
 end
 
 require "newgem/tasks"
-Dir["tasks/**/*.rake"].each { |t| load t }
-
-MetricFu::Configuration.run do |config| 
-  config.metrics  = [:churn, :saikuro, :flog, :flay, :reek, :roodi, :rcov]
-  config.graphs   = [:flog, :flay, :reek, :roodi, :rcov]
-  config.reek     = { :dirs_to_reek => ["lib"] }
-  config.rcov     = { 
-                      :test_files => ["test/test_*.rb"],
-                      :rcov_opts => [
-                        "--sort coverage", 
-                        "--no-html", 
-                        "--text-coverage",
-                        "--no-color",
-                        "--profile",
-                        "--exclude /gems/,/Library/,spec"
-                      ]
-                    }
-end
+Dir["tasks/*.task"].each { |t| load t }
 
 # TODO - want other tests/tasks run by default? Add them to the list
 # remove_task :default
