@@ -6,6 +6,14 @@ require "csv"
 require "rubygems"
 require "builder"
 
+begin
+  require "curb"
+  use_curb = true
+rescue LoadError
+  use_curb = false
+end
+CURB_AVAILABLE = use_curb
+
 module Biomart
   VERSION = "0.1.3"
   
@@ -41,68 +49,113 @@ module Biomart
   # Centralised request function for handling all of the HTTP requests 
   # to the biomart servers.
   def request( params={} )
-    params[:url] = URI.escape( params[:url] )
-    uri          = URI.parse( params[:url] )
-    client       = http_client()
-    req          = nil
-    response     = nil
-    
-    case params[:method]
-    when 'post'
-      req           = Net::HTTP::Post.new(uri.path)
-      req.form_data = { "query" => params[:query] }
+    if CURB_AVAILABLE and ( Biomart.use_net_http != true )
+      curb_request(params)
     else
-      req           = Net::HTTP::Get.new(uri.request_uri)
+      net_http_request(params)
     end
-    
-    client.start(uri.host, uri.port) do |http|
-      if Biomart.timeout or params[:timeout]
-        http.read_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
-        http.open_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
-      end
-      response = http.request(req)
-    end
-    
-    check_response( response )
-    
-    return response.body
   end
   
   class << self
-    attr_accessor :proxy, :timeout
+    attr_accessor :proxy, :timeout, :use_net_http
   end
   
   private
     
-    # Utility function to create a Net::HTTP object...
-    def http_client
+    # Utility function to perform the request method using the curb 
+    # gem (a wrapper around libcurl) - supposed to be faster than 
+    # Net::HTTP.
+    def curb_request( params={} )
+      client = Curl::Easy.new( params[:url] )
+      
+      if Biomart.timeout or params[:timeout]
+        client.connect_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
+      end
+      
+      if proxy_url() then client.proxy_url = proxy_url() end
+      
+      case params[:method]
+      when 'post'
+        client.http_post( Curl::PostField.content( "query", params[:query] ) )
+      else
+        client.http_get
+      end
+      
+      check_response( client.body_str, client.response_code )
+      
+      return client.body_str
+    end
+    
+    # Utility function to perform the request method using Net::HTTP.
+    def net_http_request( params={} )
+      uri          = URI.parse( params[:url] )
+      client       = net_http_client()
+      req          = nil
+      response     = nil
+
+      case params[:method]
+      when 'post'
+        req           = Net::HTTP::Post.new(uri.path)
+        req.form_data = { "query" => params[:query] }
+      else
+        req           = Net::HTTP::Get.new(uri.request_uri)
+      end
+
+      client.start(uri.host, uri.port) do |http|
+        if Biomart.timeout or params[:timeout]
+          http.read_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
+          http.open_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
+        end
+        response = http.request(req)
+      end
+
+      check_response( response.body, response.code )
+
+      return response.body
+    end
+    
+    # Utility function to create a Net::HTTP object.
+    def net_http_client
       client = Net::HTTP
-      if Biomart.proxy or ENV['http_proxy'] or ENV['HTTP_PROXY']
-        proxy_uri = Biomart.proxy
-        proxy_uri ||= ENV['http_proxy']
-        proxy_uri ||= ENV['HTTP_PROXY']
-        proxy = URI.parse( proxy_uri )
+      if proxy_url()
+        proxy  = URI.parse( proxy_url() )
         client = Net::HTTP::Proxy( proxy.host, proxy.port )
       end
       return client
     end
     
+    # Utility function to determine if we need to use a proxy. If yes, 
+    # returns the proxy url, if no, returns false.
+    def proxy_url
+      if Biomart.proxy or ENV['http_proxy'] or ENV['HTTP_PROXY']
+        proxy_uri = Biomart.proxy
+        proxy_uri ||= ENV['http_proxy']
+        proxy_uri ||= ENV['HTTP_PROXY']
+        
+        return proxy_uri
+      else
+        return false
+      end
+    end
+    
     # Utility function to test the response from a http request. 
     # Raises errors if appropriate.
-    def check_response( response )
+    def check_response( body, code )
       # Process the response code/body to catch errors.
-      if response.code != "200"
-        raise HTTPError.new(response.code), "HTTP error #{response.code}, please check your biomart server and URL settings."
+      if code.is_a?(String) then code = code.to_i end
+      
+      if code != 200 
+        raise HTTPError.new(code), "HTTP error #{code}, please check your biomart server and URL settings."
       else
-        if response.body =~ /ERROR/
-          if response.body =~ /Filter (.+) NOT FOUND/
-            raise FilterError.new(response.body), "Biomart error. Filter #{$1} not found."
-          elsif response.body =~ /Attribute (.+) NOT FOUND/
-            raise AttributeError.new(response.body), "Biomart error. Attribute #{$1} not found."
-          elsif response.body =~ /Dataset (.+) NOT FOUND/
-            raise DatasetError.new(response.body), "Biomart error. Dataset #{$1} not found."
+        if body =~ /ERROR/
+          if body =~ /Filter (.+) NOT FOUND/
+            raise FilterError.new(body), "Biomart error. Filter #{$1} not found."
+          elsif body =~ /Attribute (.+) NOT FOUND/
+            raise AttributeError.new(body), "Biomart error. Attribute #{$1} not found."
+          elsif body =~ /Dataset (.+) NOT FOUND/
+            raise DatasetError.new(body), "Biomart error. Dataset #{$1} not found."
           else
-            raise BiomartError.new(response.body), "Biomart error."
+            raise BiomartError.new(body), "Biomart error."
           end
         end
       end

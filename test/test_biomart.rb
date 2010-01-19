@@ -63,34 +63,17 @@ class BiomartTest < Test::Unit::TestCase
       assert( @kermits.attributes["ensembl_gene_id"].is_a?( Biomart::Attribute ), "Biomart::Dataset is not creating Biomart::Attribute objects." )
     end
     
-    should "perform count queries" do
-      htgt_count = @htgt_targ.count()
-      assert( htgt_count.is_a?( Integer ), "Biomart::Dataset.count is not returning integers." )
-      assert( htgt_count > 0, "Biomart::Dataset.count is returning zero - this is wrong!" )
-      
-      htgt_count_single_filter = @htgt_targ.count( :filters => { "is_eucomm" => "1" } )
-      assert( htgt_count_single_filter.is_a?( Integer ), "Biomart::Dataset.count (with single filter) is not returning integers." )
-      assert( htgt_count_single_filter > 0, "Biomart::Dataset.count (with single filter) is returning zero - this is wrong!" )
-      
-      htgt_count_single_filter_group_value = @htgt_targ.count( :filters => { "marker_symbol" => ["Cbx1","Cbx7","Art4"] } )
-      assert( htgt_count_single_filter_group_value.is_a?( Integer ), "Biomart::Dataset.count (with single filter, group value) is not returning integers." )
-      assert( htgt_count_single_filter_group_value > 0, "Biomart::Dataset.count (with single filter, group value) is returning zero - this is wrong!" )
-    end
-    
-    should "perform search queries" do
-      search = @htgt_trap.search()
-      assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash." )
-      assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array." )
-      
-      search1 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :process_results => true )
-      assert( search1.is_a?( Array ), "Biomart::Dataset.search (filters defined with processing) is not returning an array." )
-      assert( search1.first.is_a?( Hash ), "Biomart::Dataset.search (filters defined with processing) is not returning an array of hashes." )
-      assert( search1.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters defined with processing) is not returning the correct info." )
-      
-      search2 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :attributes => ["marker_symbol","ensembl_gene_id"], :process_results => true )
-      assert( search2.is_a?( Array ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array." )
-      assert( search2.first.is_a?( Hash ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array of hashes." )
-      assert( search2.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters and attributes defined with processing) is not returning the correct info." )
+    should "perform count/search queries" do
+      if CURB_AVAILABLE
+        perform_count_queries("curb")
+        perform_search_queries("curb")
+        Biomart.use_net_http = true
+        perform_count_queries("net/http")
+        perform_search_queries("net/http")
+      else
+        perform_count_queries("net/http")
+        perform_search_queries("net/http")
+      end
     end
     
     should "perform search queries whilst altering the timeout property" do
@@ -122,6 +105,37 @@ class BiomartTest < Test::Unit::TestCase
       assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash." )
       assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array." )
     end
+    
+  end
+  
+  def perform_count_queries( library )
+    htgt_count = @htgt_targ.count()
+    assert( htgt_count.is_a?( Integer ), "Biomart::Dataset.count is not returning integers. [using #{library} for HTTP communication]" )
+    assert( htgt_count > 0, "Biomart::Dataset.count is returning zero - this is wrong! [using #{library} for HTTP communication]" )
+    
+    htgt_count_single_filter = @htgt_targ.count( :filters => { "is_eucomm" => "1" } )
+    assert( htgt_count_single_filter.is_a?( Integer ), "Biomart::Dataset.count (with single filter) is not returning integers. [using #{library} for HTTP communication]" )
+    assert( htgt_count_single_filter > 0, "Biomart::Dataset.count (with single filter) is returning zero - this is wrong! [using #{library} for HTTP communication]" )
+    
+    htgt_count_single_filter_group_value = @htgt_targ.count( :filters => { "marker_symbol" => ["Cbx1","Cbx7","Art4"] } )
+    assert( htgt_count_single_filter_group_value.is_a?( Integer ), "Biomart::Dataset.count (with single filter, group value) is not returning integers. [using #{library} for HTTP communication]" )
+    assert( htgt_count_single_filter_group_value > 0, "Biomart::Dataset.count (with single filter, group value) is returning zero - this is wrong! [using #{library} for HTTP communication]" )
+  end
+  
+  def perform_search_queries( library )
+    search = @htgt_trap.search()
+    assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash. [using #{library} for HTTP communication]" )
+    assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array. [using #{library} for HTTP communication]" )
+    
+    search1 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :process_results => true )
+    assert( search1.is_a?( Array ), "Biomart::Dataset.search (filters defined with processing) is not returning an array. [using #{library} for HTTP communication]" )
+    assert( search1.first.is_a?( Hash ), "Biomart::Dataset.search (filters defined with processing) is not returning an array of hashes. [using #{library} for HTTP communication]" )
+    assert( search1.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters defined with processing) is not returning the correct info. [using #{library} for HTTP communication]" )
+    
+    search2 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :attributes => ["marker_symbol","ensembl_gene_id"], :process_results => true )
+    assert( search2.is_a?( Array ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array. [using #{library} for HTTP communication]" )
+    assert( search2.first.is_a?( Hash ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array of hashes. [using #{library} for HTTP communication]" )
+    assert( search2.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters and attributes defined with processing) is not returning the correct info. [using #{library} for HTTP communication]" )
   end
   
   context "The Biomart module" do
