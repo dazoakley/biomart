@@ -64,9 +64,18 @@ module Biomart
     # optional arguments:
     #
     # :filters::         hash of key-value pairs (filter => search term)
+    # :timeout::         set a timeout length for the request (secs)
     def count( args={} )
-      args.merge!({ :count => "1" })
-      result = request( :method => 'post', :url => @url, :query => generate_xml(args) )
+      result = request(
+        :method  => 'post',
+        :url     => @url,
+        :timeout => args[:timeout],
+        :query   => generate_xml(
+          :filters    => args[:filters], 
+          :attributes => args[:attributes], 
+          :count      => "1"
+        )
+      )
       return result.to_i
     end
     
@@ -77,6 +86,7 @@ module Biomart
     # :filters::         hash of key-value pairs (filter => search term)
     # :attributes::      array of attributes to retrieve
     # :process_results:: true/false - convert search results to object
+    # :timeout::         set a timeout length for the request (secs)
     #
     # By default will return a hash with the following:
     # 
@@ -86,9 +96,18 @@ module Biomart
     # But with the :process_results option will return an array of hashes, 
     # where each hash represents a row of results (keyed by the attribute name).
     def search( args={} )
-      response = request( :method => 'post', :url => @url, :query => generate_xml(args) )
-      result   = process_tsv( args, response )
-      result   = conv_results_to_a_of_h( result ) if args[:process_results]
+      response = request(
+        :method  => 'post',
+        :url     => @url,
+        :timeout => args[:timeout],
+        :query   => generate_xml(
+          :filters    => args[:filters], 
+          :attributes => args[:attributes], 
+          :count      => args[:count]
+        )
+      )
+      result = process_tsv( args, response )
+      result = conv_results_to_a_of_h( result ) if args[:process_results]
       return result
     end
     

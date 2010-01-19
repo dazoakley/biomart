@@ -93,6 +93,17 @@ class BiomartTest < Test::Unit::TestCase
       assert( search2.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters and attributes defined with processing) is not returning the correct info." )
     end
     
+    should "perform search queries whilst altering the timeout property" do
+      search = @htgt_trap.search( :timeout => 60 )
+      assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options except per-request timeout) is not returning a hash." )
+      assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options except per-request timeout) is not returning an array." )
+      
+      Biomart.timeout = 60
+      search = @htgt_trap.search()
+      assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options except global timeout) is not returning a hash." )
+      assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options except global timeout) is not returning an array." )
+    end
+    
     should "handle search queries that will generate poorly formatted TSV data" do
       search = @htgt_targ.search(
         :filters => { "mgi_accession_id" => [ "MGI:1921569", "MGI:1913402", "MGI:1913300" ] },

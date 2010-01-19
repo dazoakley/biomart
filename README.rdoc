@@ -92,6 +92,21 @@ Now all requests made through Biomart will be proxied via proxy.example.com.
 Alternatively you can also set your proxy url in the environment variable 
 'http_proxy', and Biomart will automatically detect this.
 
+== Setting a Timeout Value
+
+If you need to alter the default request timeout value, you can alter this 
+globally via Biomart.timeout:
+
+  Biomart.timeout = 60     # For a 60 second timeout...
+
+Or on a per-request basis by passing the :timeout option when searching:
+
+  kermits.search( 
+    :filters         => { "marker_symbol" => "Cbx1" }, 
+    :process_results => true, 
+    :timeout         => 60
+  )
+
 == Meta
 
 Written by Darren Oakley (daz dot oakley at gmail dot com)

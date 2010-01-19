@@ -38,50 +38,75 @@ module Biomart
   # dataset.
   class DatasetError   < BiomartError; end
   
-  @@url    = 'http://www.biomart.org/biomart/martservice'
-  @@client = Net::HTTP
-  
   # Centralised request function for handling all of the HTTP requests 
   # to the biomart servers.
   def request( params={} )
-    if Biomart.proxy or ENV['http_proxy']
-      proxy_uri = Biomart.proxy
-      proxy_uri ||= ENV['http_proxy']
-      proxy = URI.parse( proxy_uri )
-      @@client = Net::HTTP::Proxy( proxy.host, proxy.port )
+    params[:url] = URI.escape( params[:url] )
+    uri          = URI.parse( params[:url] )
+    client       = http_client()
+    req          = nil
+    response     = nil
+    
+    case params[:method]
+    when 'post'
+      req           = Net::HTTP::Post.new(uri.path)
+      req.form_data = { "query" => params[:query] }
+    else
+      req           = Net::HTTP::Get.new(uri.request_uri)
     end
     
-    params[:url] = URI.escape(params[:url])
-    
-    if params[:method] === 'post'
-      res = @@client.post_form( URI.parse(params[:url]), { "query" => params[:query] } )
-    else
-      res = @@client.get_response( URI.parse(params[:url]) )
-    end
-    
-    # Process the response code/body to catch errors.
-    if res.code != "200"
-      raise HTTPError.new(res.code), "HTTP error #{res.code}, please check your biomart server and URL settings."
-    else
-      if res.body =~ /ERROR/
-        if res.body =~ /Filter (.+) NOT FOUND/
-          raise FilterError.new(res.body), "Biomart error. Filter #{$1} not found."
-        elsif res.body =~ /Attribute (.+) NOT FOUND/
-          raise AttributeError.new(res.body), "Biomart error. Attribute #{$1} not found."
-        elsif res.body =~ /Dataset (.+) NOT FOUND/
-          raise DatasetError.new(res.body), "Biomart error. Dataset #{$1} not found."
-        else
-          raise BiomartError.new(res.body), "Biomart error."
-        end
+    client.start(uri.host, uri.port) do |http|
+      if Biomart.timeout or params[:timeout]
+        http.read_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
+        http.open_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
       end
+      response = http.request(req)
     end
     
-    return res.body
+    check_response( response )
+    
+    return response.body
   end
   
   class << self
-    attr_accessor :proxy
+    attr_accessor :proxy, :timeout
   end
+  
+  private
+    
+    # Utility function to create a Net::HTTP object...
+    def http_client
+      client = Net::HTTP
+      if Biomart.proxy or ENV['http_proxy'] or ENV['HTTP_PROXY']
+        proxy_uri = Biomart.proxy
+        proxy_uri ||= ENV['http_proxy']
+        proxy_uri ||= ENV['HTTP_PROXY']
+        proxy = URI.parse( proxy_uri )
+        client = Net::HTTP::Proxy( proxy.host, proxy.port )
+      end
+      return client
+    end
+    
+    # Utility function to test the response from a http request. 
+    # Raises errors if appropriate.
+    def check_response( response )
+      # Process the response code/body to catch errors.
+      if response.code != "200"
+        raise HTTPError.new(response.code), "HTTP error #{response.code}, please check your biomart server and URL settings."
+      else
+        if response.body =~ /ERROR/
+          if response.body =~ /Filter (.+) NOT FOUND/
+            raise FilterError.new(response.body), "Biomart error. Filter #{$1} not found."
+          elsif response.body =~ /Attribute (.+) NOT FOUND/
+            raise AttributeError.new(response.body), "Biomart error. Attribute #{$1} not found."
+          elsif response.body =~ /Dataset (.+) NOT FOUND/
+            raise DatasetError.new(response.body), "Biomart error. Dataset #{$1} not found."
+          else
+            raise BiomartError.new(response.body), "Biomart error."
+          end
+        end
+      end
+    end
   
 end
 
