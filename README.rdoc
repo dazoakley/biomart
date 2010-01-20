@@ -2,7 +2,7 @@
 
 http://github.com/dazoakley/biomart
 
-http://rubyforge.org/projects/biomart
+http://rdoc.info/projects/dazoakley/biomart
 
 Biomart provides a simple interface for working with Biomart servers 
 (see http://www.biomart.org for more info on Biomart itself), so you 
@@ -113,7 +113,7 @@ Written by Darren Oakley (daz dot oakley at gmail dot com)
 
 http://github.com/dazoakley/biomart
 
-http://rubyforge.org/projects/biomart
+http://rdoc.info/projects/dazoakley/biomart
 
 == License
 
