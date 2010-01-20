@@ -6,11 +6,11 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Darren Oakley"]
-  s.date = %q{2009-01-20}
+  s.date = %q{2010-01-20}
   s.description = %q{A ruby API for interacting with Biomart services.}
   s.email = ["daz.oakley@gmail.com"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
-  s.files = ["History.txt", "Manifest.txt", "README.rdoc", "Rakefile", "biomart.gemspec", "lib/biomart.rb", "lib/biomart/attribute.rb", "lib/biomart/database.rb", "lib/biomart/dataset.rb", "lib/biomart/filter.rb", "lib/biomart/server.rb", "script/console", "script/destroy", "script/generate", "tasks/shoulda.rake", "test/test_biomart.rb", "test/test_helper.rb"]
+  s.files = ["History.txt", "Manifest.txt", "README.rdoc", "Rakefile", "biomart.gemspec", "lib/biomart.rb", "lib/biomart/attribute.rb", "lib/biomart/database.rb", "lib/biomart/dataset.rb", "lib/biomart/filter.rb", "lib/biomart/server.rb", "script/console", "script/destroy", "script/generate", "tasks/metrics.task", "tasks/shoulda.task", "test/test_biomart.rb", "test/test_helper.rb"]
   s.homepage = %q{http://github.com/dazoakley/biomart}
   s.rdoc_options = ["--main", "README.rdoc"]
   s.require_paths = ["lib"]
