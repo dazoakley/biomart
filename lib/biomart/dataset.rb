@@ -101,9 +101,8 @@ module Biomart
         :url     => @url,
         :timeout => args[:timeout],
         :query   => generate_xml(
-          :filters    => args[:filters], 
-          :attributes => args[:attributes], 
-          :count      => args[:count]
+          :filters    => args[:filters],
+          :attributes => args[:attributes]
         )
       )
       result = process_tsv( args, response )

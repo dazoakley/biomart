@@ -6,13 +6,13 @@ require "csv"
 require "rubygems"
 require "builder"
 
-begin
-  require "curb"
-  use_curb = true
-rescue LoadError
-  use_curb = false
-end
-CURB_AVAILABLE = use_curb
+#begin
+#  require "curb"
+#  use_curb = true
+#rescue LoadError
+#  use_curb = false
+#end
+#CURB_AVAILABLE = use_curb
 
 module Biomart
   VERSION = "0.1.3"
@@ -49,11 +49,13 @@ module Biomart
   # Centralised request function for handling all of the HTTP requests 
   # to the biomart servers.
   def request( params={} )
-    if CURB_AVAILABLE and ( Biomart.use_net_http != true )
-      curb_request(params)
-    else
-      net_http_request(params)
-    end
+    net_http_request(params)
+    
+    #if CURB_AVAILABLE and ( Biomart.use_net_http != true )
+    #  curb_request(params)
+    #else
+    #  net_http_request(params)
+    #end
   end
   
   class << self
@@ -76,7 +78,7 @@ module Biomart
       
       case params[:method]
       when 'post'
-        client.http_post( Curl::PostField.content( "query", params[:query] ) )
+        client.http_post( Curl::PostField.content( "query", params[:query], "text/xml" ) )
       else
         client.http_get
       end

@@ -42,7 +42,7 @@ class BiomartTest < Test::Unit::TestCase
     setup do
       @htgt_targ = @htgt.datasets["htgt_targ"]
       @htgt_trap = @htgt.datasets["htgt_trap"]
-      @kermits = @htgt.datasets["kermits"]
+      @kermits   = @htgt.datasets["kermits"]
     end
     
     should "have basic metadata" do
@@ -64,16 +64,19 @@ class BiomartTest < Test::Unit::TestCase
     end
     
     should "perform count/search queries" do
-      if CURB_AVAILABLE
-        perform_count_queries("curb")
-        perform_search_queries("curb")
-        Biomart.use_net_http = true
-        perform_count_queries("net/http")
-        perform_search_queries("net/http")
-      else
-        perform_count_queries("net/http")
-        perform_search_queries("net/http")
-      end
+      perform_count_queries("net/http")
+      perform_search_queries("net/http")
+      
+      #if CURB_AVAILABLE
+      #  perform_count_queries("curb")
+      #  perform_search_queries("curb")
+      #  Biomart.use_net_http = true
+      #  perform_count_queries("net/http")
+      #  perform_search_queries("net/http")
+      #else
+      #  perform_count_queries("net/http")
+      #  perform_search_queries("net/http")
+      #end
     end
     
     should "perform search queries whilst altering the timeout property" do
@@ -104,6 +107,7 @@ class BiomartTest < Test::Unit::TestCase
       )
       assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash." )
       assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array." )
+      assert( search[:data].size > 0, "Biomart::Dataset.search[:data] for poorly formatted TSV data is empty." )
     end
     
   end
