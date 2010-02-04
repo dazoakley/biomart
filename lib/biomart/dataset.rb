@@ -256,9 +256,13 @@ module Biomart
           
           if elements.size == 0
             # This is a bad line (causing the above Exception), try and use split to recover.
-            # Alse add an empty value as split will miss the final value...
             elements = line.split("\t")
-            elements.push(nil)
+            if line =~ /\t$/
+              # If the last attribute resturn is empty add a nil
+              # value to the array as it would have been missed 
+              # by the split function!
+              elements.push(nil)
+            end
             
             # Substitute blank strings for nils
             elements.map! do |elem|
