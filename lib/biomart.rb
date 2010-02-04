@@ -15,7 +15,7 @@ require "builder"
 #CURB_AVAILABLE = use_curb
 
 module Biomart
-  VERSION = "0.1.4"
+  VERSION = "0.1.5"
   
   # This is the base Biomart error/exception class. Rescue it if 
   # you want to catch any exceptions that this code might raise.

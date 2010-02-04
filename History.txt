@@ -1,3 +1,10 @@
+=== 0.1.5 2010-02-04
+
+* 1 major bugfix:
+  * Poorly formatted tab-separated data (coming from biomart) was not 
+    being processed correctly (as a result some data was being dropped). 
+    This hole has now been fixed...
+
 === 0.1.4 2010-01-20
 
 * 1 minor enhancement:
