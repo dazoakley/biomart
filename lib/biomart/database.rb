@@ -36,6 +36,12 @@ module Biomart
       return @datasets
     end
     
+    # Returns true / false if this database is visbile in the 
+    # default MartView interface.
+    def visible?
+      @visible
+    end
+    
     private
     
       # Utility method to do the webservice call to the biomart server 

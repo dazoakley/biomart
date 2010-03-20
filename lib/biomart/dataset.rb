@@ -129,7 +129,7 @@ module Biomart
             end
           else
             self.filters.each do |name,filter|
-              if filter.default
+              if filter.default?
                 xml.Filter( :name => name, :value => filter.default_value )
               end
             end
@@ -142,7 +142,7 @@ module Biomart
               end
             else
               self.attributes.each do |name,attribute|
-                if attribute.default
+                if attribute.default?
                   xml.Attribute( :name => name )
                 end
               end
@@ -202,7 +202,7 @@ module Biomart
           end
         else
           self.attributes.each do |name,attribute|
-            if attribute.default
+            if attribute.default?
               headers.push(name)
             end
           end
