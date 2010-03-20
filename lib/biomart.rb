@@ -1,18 +1,9 @@
 require "uri"
 require "net/http"
+require "cgi"
 require "rexml/document"
 require "csv"
-
-require "rubygems"
 require "builder"
-
-#begin
-#  require "curb"
-#  use_curb = true
-#rescue LoadError
-#  use_curb = false
-#end
-#CURB_AVAILABLE = use_curb
 
 module Biomart
   VERSION = "0.1.5"
@@ -49,72 +40,41 @@ module Biomart
   # Centralised request function for handling all of the HTTP requests 
   # to the biomart servers.
   def request( params={} )
-    net_http_request(params)
+    if params[:url] =~ / /
+      params[:url].gsub!(" ","+")
+    end
     
-    #if CURB_AVAILABLE and ( Biomart.use_net_http != true )
-    #  curb_request(params)
-    #else
-    #  net_http_request(params)
-    #end
+    uri          = URI.parse( params[:url] )
+    client       = net_http_client()
+    req          = nil
+    response     = nil
+    
+    case params[:method]
+    when 'post'
+      req           = Net::HTTP::Post.new(uri.path)
+      req.form_data = { "query" => params[:query] }
+    else
+      req           = Net::HTTP::Get.new(uri.request_uri)
+    end
+    
+    client.start(uri.host, uri.port) do |http|
+      if Biomart.timeout or params[:timeout]
+        http.read_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
+        http.open_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
+      end
+      response = http.request(req)
+    end
+    
+    check_response( response.body, response.code )
+    
+    return response.body
   end
   
   class << self
-    attr_accessor :proxy, :timeout, :use_net_http
+    attr_accessor :proxy, :timeout
   end
   
   private
-    
-    # Utility function to perform the request method using the curb 
-    # gem (a wrapper around libcurl) - supposed to be faster than 
-    # Net::HTTP.
-    def curb_request( params={} )
-      client = Curl::Easy.new( params[:url] )
-      
-      if Biomart.timeout or params[:timeout]
-        client.connect_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
-      end
-      
-      if proxy_url() then client.proxy_url = proxy_url() end
-      
-      case params[:method]
-      when 'post'
-        client.http_post( Curl::PostField.content( "query", params[:query], "text/xml" ) )
-      else
-        client.http_get
-      end
-      
-      check_response( client.body_str, client.response_code )
-      
-      return client.body_str
-    end
-    
-    # Utility function to perform the request method using Net::HTTP.
-    def net_http_request( params={} )
-      uri          = URI.parse( params[:url] )
-      client       = net_http_client()
-      req          = nil
-      response     = nil
-
-      case params[:method]
-      when 'post'
-        req           = Net::HTTP::Post.new(uri.path)
-        req.form_data = { "query" => params[:query] }
-      else
-        req           = Net::HTTP::Get.new(uri.request_uri)
-      end
-
-      client.start(uri.host, uri.port) do |http|
-        if Biomart.timeout or params[:timeout]
-          http.read_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
-          http.open_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
-        end
-        response = http.request(req)
-      end
-
-      check_response( response.body, response.code )
-
-      return response.body
-    end
     
     # Utility function to create a Net::HTTP object.
     def net_http_client

@@ -65,19 +65,8 @@ class BiomartTest < Test::Unit::TestCase
     end
     
     should "perform count/search queries" do
-      perform_count_queries("net/http")
-      perform_search_queries("net/http")
-      
-      #if CURB_AVAILABLE
-      #  perform_count_queries("curb")
-      #  perform_search_queries("curb")
-      #  Biomart.use_net_http = true
-      #  perform_count_queries("net/http")
-      #  perform_search_queries("net/http")
-      #else
-      #  perform_count_queries("net/http")
-      #  perform_search_queries("net/http")
-      #end
+      perform_count_queries()
+      perform_search_queries()
     end
     
     should "perform search queries whilst altering the timeout property" do
@@ -126,34 +115,34 @@ class BiomartTest < Test::Unit::TestCase
     
   end
   
-  def perform_count_queries( library )
+  def perform_count_queries()
     htgt_count = @htgt_targ.count()
-    assert( htgt_count.is_a?( Integer ), "Biomart::Dataset.count is not returning integers. [using #{library} for HTTP communication]" )
-    assert( htgt_count > 0, "Biomart::Dataset.count is returning zero - this is wrong! [using #{library} for HTTP communication]" )
+    assert( htgt_count.is_a?( Integer ), "Biomart::Dataset.count is not returning integers." )
+    assert( htgt_count > 0, "Biomart::Dataset.count is returning zero - this is wrong!" )
     
     htgt_count_single_filter = @htgt_targ.count( :filters => { "is_eucomm" => "1" } )
-    assert( htgt_count_single_filter.is_a?( Integer ), "Biomart::Dataset.count (with single filter) is not returning integers. [using #{library} for HTTP communication]" )
-    assert( htgt_count_single_filter > 0, "Biomart::Dataset.count (with single filter) is returning zero - this is wrong! [using #{library} for HTTP communication]" )
+    assert( htgt_count_single_filter.is_a?( Integer ), "Biomart::Dataset.count (with single filter) is not returning integers." )
+    assert( htgt_count_single_filter > 0, "Biomart::Dataset.count (with single filter) is returning zero - this is wrong!" )
     
     htgt_count_single_filter_group_value = @htgt_targ.count( :filters => { "marker_symbol" => ["Cbx1","Cbx7","Art4"] } )
-    assert( htgt_count_single_filter_group_value.is_a?( Integer ), "Biomart::Dataset.count (with single filter, group value) is not returning integers. [using #{library} for HTTP communication]" )
-    assert( htgt_count_single_filter_group_value > 0, "Biomart::Dataset.count (with single filter, group value) is returning zero - this is wrong! [using #{library} for HTTP communication]" )
+    assert( htgt_count_single_filter_group_value.is_a?( Integer ), "Biomart::Dataset.count (with single filter, group value) is not returning integers." )
+    assert( htgt_count_single_filter_group_value > 0, "Biomart::Dataset.count (with single filter, group value) is returning zero - this is wrong!" )
   end
   
-  def perform_search_queries( library )
+  def perform_search_queries()
     search = @htgt_trap.search()
-    assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash. [using #{library} for HTTP communication]" )
-    assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array. [using #{library} for HTTP communication]" )
+    assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash." )
+    assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array." )
     
     search1 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :process_results => true )
-    assert( search1.is_a?( Array ), "Biomart::Dataset.search (filters defined with processing) is not returning an array. [using #{library} for HTTP communication]" )
-    assert( search1.first.is_a?( Hash ), "Biomart::Dataset.search (filters defined with processing) is not returning an array of hashes. [using #{library} for HTTP communication]" )
-    assert( search1.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters defined with processing) is not returning the correct info. [using #{library} for HTTP communication]" )
+    assert( search1.is_a?( Array ), "Biomart::Dataset.search (filters defined with processing) is not returning an array." )
+    assert( search1.first.is_a?( Hash ), "Biomart::Dataset.search (filters defined with processing) is not returning an array of hashes." )
+    assert( search1.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters defined with processing) is not returning the correct info." )
     
     search2 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :attributes => ["marker_symbol","ensembl_gene_id"], :process_results => true )
-    assert( search2.is_a?( Array ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array. [using #{library} for HTTP communication]" )
-    assert( search2.first.is_a?( Hash ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array of hashes. [using #{library} for HTTP communication]" )
-    assert( search2.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters and attributes defined with processing) is not returning the correct info. [using #{library} for HTTP communication]" )
+    assert( search2.is_a?( Array ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array." )
+    assert( search2.first.is_a?( Hash ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array of hashes." )
+    assert( search2.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters and attributes defined with processing) is not returning the correct info." )
   end
   
   context "The Biomart module" do
@@ -161,7 +150,7 @@ class BiomartTest < Test::Unit::TestCase
       @not_biomart  = Biomart::Server.new( "http://www.sanger.ac.uk" )
       @htgt_targ    = @htgt.datasets["htgt_targ"]
       @bad_dataset  = Biomart::Dataset.new( "http://www.sanger.ac.uk/htgt/biomart", { :name => "wibble" } )
-      @good_biomart = Biomart::Server.new( "http://www.sanger.ac.uk/htgt/biomart" )
+      @good_biomart = Biomart::Server.new( "http://www.i-dcc.org/biomart" )
     end
     
     should "allow you to ping a server" do
