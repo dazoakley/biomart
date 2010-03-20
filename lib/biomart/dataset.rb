@@ -63,8 +63,10 @@ module Biomart
     #
     # optional arguments:
     # 
-    # :timeout => integer,      # set a timeout length for the request (secs)
-    # :filters => {}           # hash of key-value pairs (filter => search term)
+    #   {
+    #     :timeout => integer,      # set a timeout length for the request (secs)
+    #     :filters => {}           # hash of key-value pairs (filter => search term)
+    #   }
     def count( args={} )
       if args[:federate]
         raise Biomart::ArgumentError, "You cannot federate a count query."
@@ -87,25 +89,28 @@ module Biomart
     # 
     # optional arguments:
     # 
-    # :process_results => true/false,   # convert search results to object
-    # :timeout         => integer,      # set a timeout length for the request (secs)
-    # :filters         => {},           # hash of key-value pairs (filter => search term)
-    # :attributes      => [],           # array of attributes to retrieve
-    # :federate => [
     #   {
-    #     :dataset => Biomart::Dataset, # A dataset object to federate with
-    #     :filters         => {},       # hash of key-value pairs (filter => search term)
-    #     :attributes      => []        # array of attributes to retrieve
+    #     :process_results => true/false,   # convert search results to object
+    #     :timeout         => integer,      # set a timeout length for the request (secs)
+    #     :filters         => {},           # hash of key-value pairs (filter => search term)
+    #     :attributes      => [],           # array of attributes to retrieve
+    #     :federate => [
+    #       {
+    #         :dataset    => Biomart::Dataset, # A dataset object to federate with
+    #         :filters    => {},               # hash of key-value pairs (filter => search term)
+    #         :attributes => []                # array of attributes to retrieve
+    #       }
+    #     ]
     #   }
-    # ]
-    #
     # Note, if you do not pass any filters or attributes arguments, the defaults 
     # for the dataset shall be used.
     #
     # By default will return a hash with the following:
     # 
-    # :headers => [],   # array of headers
-    # :data    => []    # array of arrays containing search results
+    #   {
+    #     :headers => [],   # array of headers
+    #     :data    => []    # array of arrays containing search results
+    #   }
     #
     # But with the :process_results option will return an array of hashes, 
     # where each hash represents a row of results (keyed by the attribute name).
