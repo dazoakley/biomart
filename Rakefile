@@ -15,14 +15,14 @@ $hoe = Hoe.spec "biomart" do
   self.rubyforge_name   = self.name
   self.url              = "http://github.com/dazoakley/biomart"
   self.summary          = "A ruby API for interacting with Biomart services."
-  self.description      = "A ruby API for interacting with Biomart services."
+  self.description      = "A ruby API for interacting with Biomart XML based webservices."
   self.extra_deps       = [["builder",">= 0"]]
   self.extra_dev_deps   = [["thoughtbot-shoulda",">=0"]]
   self.extra_rdoc_files = ["README.rdoc"]
 end
 
 require "newgem/tasks"
-Dir["tasks/*.task"].each { |t| load t }
+Dir["tasks/*.rake"].each { |t| load t }
 
 # TODO - want other tests/tasks run by default? Add them to the list
 # remove_task :default
