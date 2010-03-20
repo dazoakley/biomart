@@ -62,10 +62,14 @@ module Biomart
     # the result of the count query.
     #
     # optional arguments:
-    #
-    # :filters::         hash of key-value pairs (filter => search term)
-    # :timeout::         set a timeout length for the request (secs)
+    # 
+    # :timeout => integer,      # set a timeout length for the request (secs)
+    # :filters => {}           # hash of key-value pairs (filter => search term)
     def count( args={} )
+      if args[:federate]
+        raise Biomart::ArgumentError, "You cannot federate a count query."
+      end
+      
       result = request(
         :method  => 'post',
         :url     => @url,
@@ -82,16 +86,26 @@ module Biomart
     # Function to perform a Biomart search.
     # 
     # optional arguments:
+    # 
+    # :process_results => true/false,   # convert search results to object
+    # :timeout         => integer,      # set a timeout length for the request (secs)
+    # :filters         => {},           # hash of key-value pairs (filter => search term)
+    # :attributes      => [],           # array of attributes to retrieve
+    # :federate => [
+    #   {
+    #     :dataset => Biomart::Dataset, # A dataset object to federate with
+    #     :filters         => {},       # hash of key-value pairs (filter => search term)
+    #     :attributes      => []        # array of attributes to retrieve
+    #   }
+    # ]
     #
-    # :filters::         hash of key-value pairs (filter => search term)
-    # :attributes::      array of attributes to retrieve
-    # :process_results:: true/false - convert search results to object
-    # :timeout::         set a timeout length for the request (secs)
+    # Note, if you do not pass any filters or attributes arguments, the defaults 
+    # for the dataset shall be used.
     #
     # By default will return a hash with the following:
     # 
-    # :headers::        array of headers
-    # :data::           array of arrays containing search results
+    # :headers => [],   # array of headers
+    # :data    => []    # array of arrays containing search results
     #
     # But with the :process_results option will return an array of hashes, 
     # where each hash represents a row of results (keyed by the attribute name).
@@ -100,11 +114,9 @@ module Biomart
         :method  => 'post',
         :url     => @url,
         :timeout => args[:timeout],
-        :query   => generate_xml(
-          :filters    => args[:filters],
-          :attributes => args[:attributes]
-        )
+        :query   => generate_xml( process_xml_args(args) )
       )
+      
       result = process_tsv( args, response )
       result = conv_results_to_a_of_h( result ) if args[:process_results]
       return result
@@ -118,38 +130,22 @@ module Biomart
       xml.instruct!
       xml.declare!( :DOCTYPE, :Query )
       xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "0", :uniqueRows => "1", :count => args[:count], :datasetConfigVersion => "0.6" ) {
-        xml.Dataset( :name => @name, :interface => "default" ) {
-          
-          if args[:filters]
-            args[:filters].each do |name,value|
-              if value.is_a? Array
-                value = value.join(",")
-              end
-              xml.Filter( :name => name, :value => value )
+        dataset_xml( xml, self, { :filters => args[:filters], :attributes => args[:attributes] } )
+        
+        if args[:federate]
+          args[:federate].each do |joined_dataset|
+            unless joined_dataset[:dataset].is_a?(Biomart::Dataset)
+              raise Biomart::ArgumentError, "You must pass a Biomart::Dataset object to the :federate[:dataset] option."
             end
-          else
-            self.filters.each do |name,filter|
-              if filter.default?
-                xml.Filter( :name => name, :value => filter.default_value )
-              end
-            end
+            
+            dataset_xml(
+              xml,
+              joined_dataset[:dataset],
+              { :filters => joined_dataset[:filters], :attributes => joined_dataset[:attributes] }
+            )
           end
-          
-          unless args[:count]
-            if args[:attributes]
-              args[:attributes].each do |name|
-                xml.Attribute( :name => name )
-              end
-            else
-              self.attributes.each do |name,attribute|
-                if attribute.default?
-                  xml.Attribute( :name => name )
-                end
-              end
-            end
-          end
-          
-        }
+        end
+        
       }
       
       return biomart_xml
@@ -190,21 +186,77 @@ module Biomart
         end
       end
       
+      # Utility function to process and test the arguments passed for 
+      # the xml query.
+      def process_xml_args( args={} )
+        xml_args = {
+          :filters    => args[:filters],
+          :attributes => args[:attributes]
+        }
+
+        if args[:federate]
+          unless args[:federate].is_a?(Array)
+            raise Biomart::ArgumentError, "The :federate option must be passed as an array."
+          end
+
+          unless args[:federate].size === 1
+            raise Biomart::ArgumentError, "Sorry, we can only federate two datasets at present.  This limitation shall be lifted in version 0.8 of biomart."
+          end
+
+          xml_args[:federate] = args[:federate]
+        end
+
+        return xml_args
+      end
+      
+      # Helper function to produce the portion of the biomart xml for 
+      # a dataset query.
+      def dataset_xml( xml, dataset, args )
+        xml.Dataset( :name => dataset.name, :interface => "default" ) {
+
+          if args[:filters]
+            args[:filters].each do |name,value|
+              if value.is_a? Array
+                value = value.join(",")
+              end
+              xml.Filter( :name => name, :value => value )
+            end
+          else
+            dataset.filters.each do |name,filter|
+              if filter.default?
+                xml.Filter( :name => name, :value => filter.default_value )
+              end
+            end
+          end
+
+          unless args[:count]
+            if args[:attributes]
+              args[:attributes].each do |name|
+                xml.Attribute( :name => name )
+              end
+            else
+              dataset.attributes.each do |name,attribute|
+                if attribute.default?
+                  xml.Attribute( :name => name )
+                end
+              end
+            end
+          end
+
+        }
+      end
+      
       # Utility function to transform the tab-separated data retrieved 
       # from the Biomart search query into a ruby object.
       def process_tsv( args, tsv )
         headers     = []
         parsed_data = []
+        
+        append_header_attributes_for_tsv( headers, self, args[:attributes] )
 
-        if args[:attributes]
-          args[:attributes].each do |attribute|
-            headers.push(attribute)
-          end
-        else
-          self.attributes.each do |name,attribute|
-            if attribute.default?
-              headers.push(name)
-            end
+        if args[:federate]
+          args[:federate].each do |joined_dataset|
+            append_header_attributes_for_tsv( headers, joined_dataset[:dataset], joined_dataset[:attributes] )
           end
         end
 
@@ -229,6 +281,22 @@ module Biomart
           :headers => headers,
           :data    => parsed_data
         }
+      end
+      
+      # Helper function to append the attribute names to the 'headers' array 
+      # for processing the returned results.
+      def append_header_attributes_for_tsv( headers, dataset, attributes )
+        if attributes
+          attributes.each do |attribute|
+            headers.push(attribute)
+          end
+        else
+          dataset.attributes.each do |name,attribute|
+            if attribute.default?
+              headers.push(name)
+            end
+          end
+        end
       end
       
       # Utility function to process TSV formatted data that raises errors. (Biomart 

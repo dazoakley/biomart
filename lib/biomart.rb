@@ -3,6 +3,8 @@ require "net/http"
 require "cgi"
 require "rexml/document"
 require "csv"
+
+require "rubygems"
 require "builder"
 
 module Biomart
@@ -36,6 +38,10 @@ module Biomart
   # when a request is made for a incorrectly named (or non-existent) 
   # dataset.
   class DatasetError   < BiomartError; end
+  
+  # Error class representing errors in the arguments being passed 
+  # to the api.
+  class ArgumentError < BiomartError; end
   
   # Centralised request function for handling all of the HTTP requests 
   # to the biomart servers.

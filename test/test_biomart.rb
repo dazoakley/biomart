@@ -43,6 +43,7 @@ class BiomartTest < Test::Unit::TestCase
       @htgt_targ = @htgt.datasets["htgt_targ"]
       @htgt_trap = @htgt.datasets["htgt_trap"]
       @kermits   = @htgt.datasets["kermits"]
+      @ensembl   = @htgt.datasets["mmusculus_gene_ensembl"]
       @emma      = Biomart::Dataset.new( "http://www.emmanet.org/biomart", { :name => "strains" } )
     end
     
@@ -113,6 +114,29 @@ class BiomartTest < Test::Unit::TestCase
       assert( search2[:data].size > 0, "Biomart::Dataset.search[:data] for poorly formatted TSV data is empty. (EMMA Query)" )
     end
     
+    should "perform federated search queries" do
+      results = @htgt_targ.search(
+        :filters => {
+          "status" => [
+            "Mice - Genotype confirmed", "Mice - Germline transmission",
+            "Mice - Microinjection in progress", "ES Cells - Targeting Confirmed"
+          ]
+        },
+        :attributes => [ "marker_symbol", "mgi_accession_id", "status" ],
+        :federate => [
+          {
+            :dataset => @ensembl,
+            :filters => { "chromosome_name" => "1", "start" => "1", "end" => "10000000" },
+            :attributes => []
+          }
+        ]
+      )
+      
+      assert( results.is_a?(Hash), "Biomart::Dataset.search is not returning a hash. [federated search]" )
+      assert( results[:data].is_a?(Array), "Biomart::Dataset.search[:data] is not returning an array. [federated search]" )
+      assert( results[:data][0].size === 3, "Biomart::Dataset.search[:data] is not returning 3 attributes. [federated search]" )
+      assert( results[:headers].size === 3, "Biomart::Dataset.search[:headers] is not returning 3 elements. [federated search]" )
+    end
   end
   
   def perform_count_queries()

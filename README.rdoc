@@ -79,7 +79,57 @@ just get on with things...
   # etc. etc.
   
 See Biomart module and Class docs for more detail.
+
+== Federated Searches
+
+To perform a federated search across two datasets...
+
+  htgt = Biomart::Server.new( "http://www.sanger.ac.uk/htgt/biomart" )
+
+  res = htgt.datasets["htgt_targ"].search(
+    :filters => {
+      "status"     => [
+        "Mice - Genotype confirmed",
+        "Mice - Germline transmission",
+        "Mice - Microinjection in progress",
+        "ES Cells - Targeting Confirmed"
+      ]
+    },
+    :attributes => [
+      "marker_symbol",
+      "mgi_accession_id",
+      "status"
+    ],
+    :federate => [
+      {
+        :dataset => htgt.datasets["mmusculus_gene_ensembl"],
+        :filters => {
+          "chromosome_name" => "1",
+          "start"           => "1",
+          "end"             => "10000000"
+        },
+        :attributes => []
+      }
+    ]
+  )
   
+The above will perform a federated query for all genes with available 
+mice knockout es cells in the first 10Mb of chromosome 1 from the IKMC 
+projects (not really important, but it's an example of a complex query).
+
+The basic search arguments are the same as if we were searching across 
+a single dataset, with the addition of the :federate option, which is 
+an array of hashes for each dataset (and additional filters/attributes) 
+that we want to federate our search with.
+
+Note: at present you can only federate across two datasets, this is 
+limitation in the current stable release of biomart (0.7).  If you try 
+federate across more than two datasets, a Biomart::ArgumentError will 
+be raised.  This limitation shall be removed from this API when it is 
+possible to federate across more than two datasets in biomart itself.
+
+Count queries are only allowed on single datasets.
+
 == Using a Proxy
 
 If you need to channel all of your requests via a proxy, specify your 
