@@ -1,5 +1,8 @@
 require "rubygems"
+
+gem "flog", "= 2.2.0"
 gem "hoe", ">= 2.1.0"
+
 require "hoe"
 require "fileutils"
 require "./lib/biomart"
