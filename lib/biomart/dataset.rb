@@ -64,12 +64,16 @@ module Biomart
     # optional arguments:
     # 
     #   {
-    #     :timeout => integer,      # set a timeout length for the request (secs)
+    #     :timeout => integer,     # set a timeout length for the request (secs)
     #     :filters => {}           # hash of key-value pairs (filter => search term)
     #   }
     def count( args={} )
       if args[:federate]
         raise Biomart::ArgumentError, "You cannot federate a count query."
+      end
+      
+      if args[:required_attributes]
+        raise Biomart::ArgumentError, "The :required_attributes option is not allowed on count queries."
       end
       
       result = request(
@@ -90,10 +94,11 @@ module Biomart
     # optional arguments:
     # 
     #   {
-    #     :process_results => true/false,   # convert search results to object
-    #     :timeout         => integer,      # set a timeout length for the request (secs)
-    #     :filters         => {},           # hash of key-value pairs (filter => search term)
-    #     :attributes      => [],           # array of attributes to retrieve
+    #     :process_results     => true/false,   # convert search results to object
+    #     :timeout             => integer,      # set a timeout length for the request (secs)
+    #     :filters             => {},           # hash of key-value pairs (filter => search term)
+    #     :attributes          => [],           # array of attributes to retrieve
+    #     :required_attributes => [],           # array of attributes that are required
     #     :federate => [
     #       {
     #         :dataset    => Biomart::Dataset, # A dataset object to federate with
@@ -102,8 +107,12 @@ module Biomart
     #       }
     #     ]
     #   }
+    #
     # Note, if you do not pass any filters or attributes arguments, the defaults 
     # for the dataset shall be used.
+    #
+    # Also, using the :required_attributes option - this performs AND logic and will require 
+    # data to be returned in all of the listed attributes in order for it to be returned.
     #
     # By default will return a hash with the following:
     # 
@@ -115,6 +124,10 @@ module Biomart
     # But with the :process_results option will return an array of hashes, 
     # where each hash represents a row of results (keyed by the attribute name).
     def search( args={} )
+      if args[:required_attributes] and !args[:required_attributes].is_a?(Array)
+        raise Biomart::ArgumentError, "The :required_attributes option must be passed as an array."
+      end
+      
       response = request(
         :method  => 'post',
         :url     => @url,
@@ -123,8 +136,48 @@ module Biomart
       )
       
       result = process_tsv( args, response )
+      result = filter_data_rows( args, result ) if args[:required_attributes]
       result = conv_results_to_a_of_h( result ) if args[:process_results]
       return result
+    end
+    
+    def filter_data_rows( args, result )
+      # Get the list of attributes searched for...
+      attributes = args[:attributes] ? args[:attributes] : []
+      if attributes.empty?
+        self.attributes.each do |name,attribute|
+          if attribute.default?
+            attributes.push(name)
+          end
+        end
+      end
+      
+      # Work out which attribute positions we need to test...
+      positions_to_test = []
+      attributes.each_index do |index|
+        if args[:required_attributes].include?(attributes[index])
+          positions_to_test.push(index)
+        end
+      end
+      
+      # Now go through the results and filter out the unwanted data...
+      filtered_data = []
+      result[:data].each do |data_row|
+        save_row_count = 0
+        
+        positions_to_test.each do |position|
+          save_row_count = save_row_count + 1 unless data_row[position].nil?
+        end
+        
+        if save_row_count == positions_to_test.size
+          filtered_data.push(data_row)
+        end
+      end
+      
+      return {
+        :headers => result[:headers],
+        :data    => filtered_data
+      }
     end
     
     # Utility function to build the Biomart query XML
@@ -204,7 +257,7 @@ module Biomart
             raise Biomart::ArgumentError, "The :federate option must be passed as an array."
           end
 
-          unless args[:federate].size === 1
+          unless args[:federate].size == 1
             raise Biomart::ArgumentError, "Sorry, we can only federate two datasets at present.  This limitation shall be lifted in version 0.8 of biomart."
           end
 
