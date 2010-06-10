@@ -141,45 +141,6 @@ module Biomart
       return result
     end
     
-    def filter_data_rows( args, result )
-      # Get the list of attributes searched for...
-      attributes = args[:attributes] ? args[:attributes] : []
-      if attributes.empty?
-        self.attributes.each do |name,attribute|
-          if attribute.default?
-            attributes.push(name)
-          end
-        end
-      end
-      
-      # Work out which attribute positions we need to test...
-      positions_to_test = []
-      attributes.each_index do |index|
-        if args[:required_attributes].include?(attributes[index])
-          positions_to_test.push(index)
-        end
-      end
-      
-      # Now go through the results and filter out the unwanted data...
-      filtered_data = []
-      result[:data].each do |data_row|
-        save_row_count = 0
-        
-        positions_to_test.each do |position|
-          save_row_count = save_row_count + 1 unless data_row[position].nil?
-        end
-        
-        if save_row_count == positions_to_test.size
-          filtered_data.push(data_row)
-        end
-      end
-      
-      return {
-        :headers => result[:headers],
-        :data    => filtered_data
-      }
-    end
-    
     # Utility function to build the Biomart query XML
     def generate_xml( args={} )
       biomart_xml = ""
@@ -427,6 +388,46 @@ module Biomart
 
         return result_objects
       end
-    
+      
+      # Utility function to remove data rows from a search result that do not include 
+      # the :required_attributes.
+      def filter_data_rows( args, result )
+        # Get the list of attributes searched for...
+        attributes = args[:attributes] ? args[:attributes] : []
+        if attributes.empty?
+          self.attributes.each do |name,attribute|
+            if attribute.default?
+              attributes.push(name)
+            end
+          end
+        end
+
+        # Work out which attribute positions we need to test...
+        positions_to_test = []
+        attributes.each_index do |index|
+          if args[:required_attributes].include?(attributes[index])
+            positions_to_test.push(index)
+          end
+        end
+
+        # Now go through the results and filter out the unwanted data...
+        filtered_data = []
+        result[:data].each do |data_row|
+          save_row_count = 0
+
+          positions_to_test.each do |position|
+            save_row_count = save_row_count + 1 unless data_row[position].nil?
+          end
+
+          if save_row_count == positions_to_test.size
+            filtered_data.push(data_row)
+          end
+        end
+
+        return {
+          :headers => result[:headers],
+          :data    => filtered_data
+        }
+      end
   end
 end
