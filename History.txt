@@ -1,3 +1,10 @@
+=== 0.2.0 2010-06-10
+
+* 2 major enhancements:
+  * Added the ability to perform federated queries across two datasets.
+  * Added the option to discard rows of data if a specified list of
+    fields are not present.
+
 === 0.1.5 2010-02-04
 
 * 1 major bugfix:

@@ -20,7 +20,7 @@ $hoe = Hoe.spec "biomart" do
   self.summary          = "A ruby API for interacting with Biomart services."
   self.description      = "A ruby API for interacting with Biomart XML based webservices."
   self.extra_deps       = [["builder",">= 0"]]
-  self.extra_dev_deps   = [["thoughtbot-shoulda",">=0"]]
+  self.extra_dev_deps   = [["shoulda",">= 2.10"]]
   self.extra_rdoc_files = ["README.rdoc"]
 end
 
