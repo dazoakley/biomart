@@ -130,6 +130,36 @@ possible to federate across more than two datasets in biomart itself.
 
 Count queries are only allowed on single datasets.
 
+== Required Attributes
+
+As biomarts are generally big de-normalised data stores, a common task 
+after receiving a set of results is to filter out rows that don't have 
+information for a given attribute or set of attributes.  A facility for 
+doing this has been built into the gem.
+
+  htgt = Biomart::Server.new( "http://www.sanger.ac.uk/htgt/biomart" )
+  
+  res = htgt.datasets["mmusculus_gene_ensembl"].search(
+    :filters => {
+      "chromosome_name" => "1",
+      "start"           => "1",
+      "end"             => "10000000"
+    },
+    :attributes => [
+      "ensembl_gene_id", "ensembl_transcript_id",
+      "mouse_paralog_ensembl_gene", "mouse_paralog_chromosome"
+    ],
+    :required_attributes => ["mouse_paralog_ensembl_gene"]
+  )
+
+The above will perform a basic search and then automatically remove 
+any result row that does not have a value for the "mouse_paralog_ensembl_gene" 
+attribute.
+
+Note: You can specify more than one required attribute.  If more than one 
+required attribute is specified, ALL of these attributes must be present 
+for a data row to be returned (it is using AND logic).
+
 == Using a Proxy
 
 If you need to channel all of your requests via a proxy, specify your 
