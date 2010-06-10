@@ -10,7 +10,7 @@ don't have to get down and dirty with the basic webservice calls yourself.
 
 == Install
 
-sudo gem install biomart
+  gem install biomart
 
 == Usage
 
