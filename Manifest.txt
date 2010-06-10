@@ -12,7 +12,7 @@ lib/biomart/server.rb
 script/console
 script/destroy
 script/generate
-tasks/metrics.task
-tasks/shoulda.task
+tasks/metrics.rake
+tasks/shoulda.rake
 test/test_biomart.rb
 test/test_helper.rb
