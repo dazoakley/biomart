@@ -6,6 +6,19 @@ module Biomart
     
     attr_reader :name, :display_name, :visible
     
+    # Creates a new Biomart::Dataset object.
+    #
+    # @param [String] url The URL location of the biomart server.
+    # @param [Hash] args An arguments hash giving details of the dataset.
+    #
+    # arguments hash:
+    #
+    #   {
+    #     :name         => String,     #
+    #     "name"        => String,     #
+    #     :display_name => {}          #
+    #     
+    #   }
     def initialize( url, args )
       @url = url or raise ArgumentError, "must pass :url"
       unless @url =~ /martservice/
