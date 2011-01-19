@@ -1,32 +1,25 @@
-require "rubygems"
+require 'rubygems'
+require 'rake'
 
-gem "flog", "= 2.2.0"
-gem "hoe", ">= 2.1.0"
+require './lib/biomart'
 
-require "hoe"
-require "fileutils"
-require "./lib/biomart"
+begin
+  require 'echoe'
 
-Hoe.plugin :newgem
-# Hoe.plugin :website
-# Hoe.plugin :cucumberfeatures
+  Echoe.new('biomart', '0.2.0') do |p|
+    p.description    = 'A ruby API for interacting with Biomart XML based webservices.'
+    p.url            = 'http://github.com/dazoakley/biomart'
+    p.author         = 'Darren Oakley'
+    p.email          = 'daz.oakley@gmail.com'
+    p.ignore_pattern = ['tmp/*', 'script/*']
+    p.dependencies   = [['builder','~>2']]
+    p.development_dependencies = [['shoulda','>= 2.10'],['yard', '>= 0']]
+  end
 
-# Generate all the Rake tasks
-# Run "rake -T" to see list of generated tasks (from gem root directory)
-$hoe = Hoe.spec "biomart" do
-  self.developer        "Darren Oakley", "daz.oakley@gmail.com"
-  self.rubyforge_name   = self.name
-  self.url              = "http://github.com/dazoakley/biomart"
-  self.summary          = "A ruby API for interacting with Biomart services."
-  self.description      = "A ruby API for interacting with Biomart XML based webservices."
-  self.extra_deps       = [["builder",">= 0"]]
-  self.extra_dev_deps   = [["shoulda",">= 2.10"]]
-  self.extra_rdoc_files = ["README.rdoc"]
+rescue LoadError => boom
+  puts "You are missing a dependency required for meta-operations on this gem."
+  puts "#{boom.to_s.capitalize}."
 end
 
-require "newgem/tasks"
-Dir["tasks/*.rake"].each { |t| load t }
-
-# TODO - want other tests/tasks run by default? Add them to the list
-# remove_task :default
-# task :default => [:spec, :features]
+Dir['tasks/*.rake'].each { |t| load t }
+task :default => [:test]
