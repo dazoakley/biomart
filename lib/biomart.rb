@@ -131,6 +131,7 @@ end
 
 directory = File.expand_path(File.dirname(__FILE__))
 
+require File.join(directory, 'biomart', 'version')
 require File.join(directory, 'biomart', 'server')
 require File.join(directory, 'biomart', 'database')
 require File.join(directory, 'biomart', 'dataset')

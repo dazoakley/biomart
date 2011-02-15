@@ -1,0 +1,22 @@
+PATH
+  remote: .
+  specs:
+    biomart (0.2.1)
+      builder
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    builder (3.0.0)
+    shoulda (2.11.3)
+    simplecov (0.4.0)
+      simplecov-html (~> 0.4.0)
+    simplecov-html (0.4.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  biomart!
+  shoulda (>= 2.10)
+  simplecov

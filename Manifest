@@ -9,7 +9,9 @@ lib/biomart/database.rb
 lib/biomart/dataset.rb
 lib/biomart/filter.rb
 lib/biomart/server.rb
+lib/biomart/version.rb
 tasks/metrics.rake
+tasks/rcov.rake
 tasks/shoulda.rake
 tasks/yard.rake
 test/test_biomart.rb
