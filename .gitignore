@@ -1,2 +1,4 @@
 coverage*
+simplecov*
 tmp/metric_fu*
+tmp/*.json
