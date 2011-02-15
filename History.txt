@@ -1,3 +1,8 @@
+=== 0.2.1 2011-02-XX
+
+* 1 minor bugfix:
+  * Force retrieved ASCII_8BIT text encoding to UTF-8 when running in Ruby 1.9+
+
 === 0.2.0 2010-06-10
 
 * 2 major enhancements:

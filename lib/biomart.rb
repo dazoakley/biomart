@@ -69,9 +69,16 @@ module Biomart
       response = http.request(req)
     end
     
-    check_response( response.body, response.code )
+    response_code = response.code
+    response_body = response.body
     
-    return response.body
+    if defined? Encoding && response_body.encoding == Encoding::ASCII_8BIT
+      response_body = response_body.force_encoding(Encoding::UTF_8).encode
+    end
+    
+    check_response( response_body, response_code )
+    
+    return response_body
   end
   
   class << self
