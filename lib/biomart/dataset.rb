@@ -248,10 +248,20 @@ module Biomart
 
           if args[:filters]
             args[:filters].each do |name,value|
-              if value.is_a? Array
-                value = value.join(",")
+              raise Biomart::ArgumentError, "The filter '#{name}' does not exist" if dataset.filters[name].nil?
+              
+              if dataset.filters[name].type == 'boolean'
+                if [true,'included','only'].include?(value)
+                  xml.Filter( :name => name, :excluded => '0' )
+                elsif [false,'excluded'].include?(value)
+                  xml.Filter( :name => name, :excluded => '1' )
+                else
+                  raise Biomart::ArgumentError, "The boolean filter '#{name}' can only accept 'true/included/only' or 'false/excluded' arguments."
+                end
+              else
+                value = value.join(",") if value.is_a? Array
+                xml.Filter( :name => name, :value => value )
               end
-              xml.Filter( :name => name, :value => value )
             end
           else
             dataset.filters.each do |name,filter|

@@ -42,12 +42,13 @@ class BiomartTest < Test::Unit::TestCase
   
   context "A Biomart::Dataset instance" do
     setup do
-      @htgt_targ = @htgt.datasets["htgt_targ"]
-      @htgt_trap = @htgt.datasets["htgt_trap"]
-      @kermits   = @htgt.datasets["kermits"]
-      @ensembl   = @htgt.datasets["mmusculus_gene_ensembl"]
-      @emma      = Biomart::Dataset.new( "http://www.emmanet.org/biomart", { :name => "strains" } )
-      @dcc       = Biomart::Dataset.new( "http://www.i-dcc.org/biomart", { :name => "dcc" } )
+      @htgt_targ   = @htgt.datasets["htgt_targ"]
+      @htgt_trap   = @htgt.datasets["htgt_trap"]
+      @kermits     = @htgt.datasets["kermits"]
+      @ensembl     = @htgt.datasets["mmusculus_gene_ensembl"]
+      @ensembl_var = Biomart::Dataset.new( "http://www.ensembl.org/biomart", { :name => "hsapiens_snp" } )
+      @emma        = Biomart::Dataset.new( "http://www.emmanet.org/biomart", { :name => "strains" } )
+      @dcc         = Biomart::Dataset.new( "http://www.knockoutmouse.org/biomart", { :name => "dcc" } )
     end
     
     should "have basic metadata" do
@@ -252,6 +253,47 @@ class BiomartTest < Test::Unit::TestCase
         assert_equal( false, data_row["ikmc_project_id"].nil?, "The required_attributes search has not filtered out nil values." )
       end
     end
+    
+    should "perform searches that involve boolean filters" do
+      search_opts = {
+        :filters         => { 'with_variation_annotation' => true, 'ensembl_gene' => 'ENSG00000244734' },
+        :attributes      => [ 'refsnp_id','chr_name','chrom_start' ],
+        :process_results => true
+      }
+      
+      true_results = {}
+      assert_nothing_raised( Biomart::BiomartError ) { true_results = @ensembl_var.search( search_opts ) }
+      assert( !true_results.empty?, "The search using a boolean filter is empty." )
+      
+      search_opts[:filters].merge!({ 'with_variation_annotation' => 'included' })
+      true_results2 = {}
+      assert_nothing_raised( Biomart::BiomartError ) { true_results2 = @ensembl_var.search( search_opts ) }
+      assert( !true_results2.empty?, "The search using a boolean filter is empty." )
+      assert_equal( true_results, true_results2, "Using 'included' for a boolean filter does not give the same result as 'true'." )
+      
+      search_opts[:filters].merge!({ 'with_variation_annotation' => 'only' })
+      true_results3 = {}
+      assert_nothing_raised( Biomart::BiomartError ) { true_results3 = @ensembl_var.search( search_opts ) }
+      assert( !true_results3.empty?, "The search using a boolean filter is empty." )
+      assert_equal( true_results, true_results3, "Using 'only' for a boolean filter does not give the same result as 'true'." )
+      
+      search_opts[:filters].merge!({ 'with_variation_annotation' => false })
+      false_results = {}
+      assert_nothing_raised( Biomart::BiomartError ) { false_results = @ensembl_var.search( search_opts ) }
+      assert( !false_results.empty?, "The search using a boolean filter is empty." )
+      
+      search_opts[:filters].merge!({ 'with_variation_annotation' => 'excluded' })
+      false_results2 = {}
+      assert_nothing_raised( Biomart::BiomartError ) { false_results2 = @ensembl_var.search( search_opts ) }
+      assert( !false_results2.empty?, "The search using a boolean filter is empty." )
+      assert_equal( false_results, false_results2, "Using 'excluded' for a boolean filter does not give the same result as 'false'." )
+      
+      search_opts[:filters].merge!({ 'with_variation_annotation' => 'flibble' })
+      assert_raise( Biomart::ArgumentError ) { @ensembl_var.search( search_opts ) }
+      
+      search_opts[:filters].merge!({ 'with_variation_annot' => true })
+      assert_raise( Biomart::ArgumentError ) { @ensembl_var.search( search_opts ) }
+    end
   end
   
   context "A Biomart::Attribute instance" do
@@ -282,6 +324,7 @@ class BiomartTest < Test::Unit::TestCase
       
       assert( !ens_gene_id.name.nil?, "Biomart::Filter.name is nil." )
       assert( !ens_gene_id.display_name.nil?, "Biomart::Filter.display_name is nil." )
+      assert( !ens_gene_id.type.nil?, "Biomart::Filter.type is nil." )
       
       assert( true_false.include?( ens_gene_id.hidden? ), "Biomart::Filter.hidden? is not returning true/false." )
       assert( true_false.include?( ens_gene_id.default? ), "Biomart::Filter.default? is not returning true/false." )
@@ -294,7 +337,7 @@ class BiomartTest < Test::Unit::TestCase
       @not_biomart  = Biomart::Server.new( "http://www.sanger.ac.uk" )
       @htgt_targ    = @htgt.datasets["htgt_targ"]
       @bad_dataset  = Biomart::Dataset.new( "http://www.sanger.ac.uk/htgt/biomart", { :name => "wibble" } )
-      @good_biomart = Biomart::Server.new( "http://www.i-dcc.org/biomart" )
+      @good_biomart = Biomart::Server.new( "http://www.knockoutmouse.org/biomart" )
     end
     
     should "allow you to ping a server" do
@@ -308,7 +351,7 @@ class BiomartTest < Test::Unit::TestCase
     end
     
     should "handle biomart server errors gracefully" do
-      assert_raise( Biomart::FilterError )    { @htgt_targ.count( :filters => { "wibbleblibbleblip" => "1" } ) }
+      assert_raise( Biomart::ArgumentError )  { @htgt_targ.count( :filters => { "wibbleblibbleblip" => "1" } ) }
       assert_raise( Biomart::AttributeError ) { @htgt_targ.search( :attributes => ["wibbleblibbleblip"] ) }
       assert_raise( Biomart::DatasetError )   { @bad_dataset.count() }
       

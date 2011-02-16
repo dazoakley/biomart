@@ -13,6 +13,8 @@ module Biomart
       @qualifier       = args["qualifier"]
       @type            = args["type"]
       @multiple_values = args["multipleValues"] ? true : false
+      
+      @type.downcase! unless @type.nil?
     end
     
     # Convenience method to see if this filter is hidden from 
