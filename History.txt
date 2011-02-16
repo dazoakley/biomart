@@ -1,7 +1,10 @@
-=== 0.2.1 2011-02-XX
+=== 0.2.1 2011-02-16
 
 * 1 minor bugfix:
-  * Force retrieved ASCII_8BIT text encoding to UTF-8 when running in Ruby 1.9+
+  * Force retrieved ASCII_8BIT text encoding to UTF-8 when running in 
+    Ruby 1.9+.
+* 1 minor enhancement:
+  * Added support for boolean filters.
 
 === 0.2.0 2010-06-10
 

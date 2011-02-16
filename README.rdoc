@@ -80,6 +80,39 @@ just get on with things...
   
 See Biomart module and Class docs for more detail.
 
+== Advanced Filtering
+
+Most filters in biomart are just pure textual filters, i.e.
+
+  kermits.search( :filters => { "marker_symbol" => "Cbx1" } )
+
+To filter on more than one term, simply pass a comma concatenated string, 
+or an array (the following two searches are equivalent):
+
+  kermits.search( :filters => { "marker_symbol" => "Cbx1,Mysm1" } )
+  kermits.search( :filters => { "marker_symbol" => ["Cbx1","Mysm1"] } )
+
+Finally, there are also boolean filters (shown in the standard MartView 
+interface as a filter name and then two radio buttons: 'Only' or 
+'Excluded').  These filers can only accept the following:
+
+- 'Only': true / 'only' / 'included'
+- 'Excluded': false / 'excluded'
+
+Here's some example usage:
+
+  snp_mart = Biomart::Dataset.new( "http://www.ensembl.org/biomart", { :name => "hsapiens_snp" } )
+  
+  # These are equivalent to selecting 'Only' in MartView
+  snp_mart.search( :filters => { 'with_variation_annotation' => true,       'ensembl_gene' => 'ENSG00000244734' } )
+  snp_mart.search( :filters => { 'with_variation_annotation' => 'only',     'ensembl_gene' => 'ENSG00000244734' } )
+  snp_mart.search( :filters => { 'with_variation_annotation' => 'included', 'ensembl_gene' => 'ENSG00000244734' } )
+  
+  # These are equivalent to selecting 'Excluded' in MartView
+  snp_mart.search( :filters => { 'with_variation_annotation' => false,      'ensembl_gene' => 'ENSG00000244734' } )
+  snp_mart.search( :filters => { 'with_variation_annotation' => 'excluded', 'ensembl_gene' => 'ENSG00000244734' } )
+  
+
 == Federated Searches
 
 To perform a federated search across two datasets...
