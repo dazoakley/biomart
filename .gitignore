@@ -1,4 +1,6 @@
+.yardoc/*
 coverage*
+pkg/*
 simplecov*
-tmp/metric_fu*
 tmp/*.json
+tmp/metric_fu*
