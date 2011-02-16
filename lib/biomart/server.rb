@@ -18,6 +18,8 @@ module Biomart
     
     # Returns an array of the database names (biomart 'name') 
     # for this dataset.
+    #
+    # @return [Array] An array of database names
     def list_databases
       if @databases.empty?
         fetch_databases
@@ -27,6 +29,8 @@ module Biomart
     
     # Returns a hash (keyed by the biomart 'name' for the database) 
     # of all of the Biomart::Database objects belonging to this server.
+    #
+    # @return [Hash] A hash of Biomart::Database objects keyed by the database name
     def databases
       if @databases.empty?
         fetch_databases

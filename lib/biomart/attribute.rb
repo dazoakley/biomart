@@ -12,14 +12,17 @@ module Biomart
     end
     
     # Convenience method to see if this attribute is hidden from 
-    # the standard MartView interface.  Returns true/false.
+    # the standard MartView interface.
+    #
+    # @return [Boolean] true/false
     def hidden?
       @hidden
     end
     
     # Convenience method to see if this attribute would be 
     # enabled by default in the standard MartView interface.
-    # Returns true/false.
+    #
+    # @return [Boolean] true/false
     def default?
       @default
     end

@@ -43,7 +43,27 @@ module Biomart
   
   # Centralised request function for handling all of the HTTP requests 
   # to the biomart servers.
-  def request( params={} )
+  # 
+  # @param [Hash] params Parameters to be passed to the request
+  # @return [String] The response body
+  #
+  # @example
+  #   request({
+  #     :url     => 'http://www.example.com',   # the url
+  #     :method  => 'get',                      # get/post
+  #     :query   => 'a string',                 # when using post, send this as 'query' (i.e. the biomart query xml)
+  #     :timeout => 60                          # override the default timeout
+  #   })
+  #
+  # @raise Biomart::ArgumentError Raised if a params hash is not passed (or it is empty)
+  # @raise Biomart::HTTPError Raised if a HTTP error was encountered
+  # @raise Biomart::FilterError Raised when a filter is not found
+  # @raise Biomart::AttributeError Raised when an attribute is not found
+  # @raise Biomart::DatasetError Raised when a dataset is not found
+  # @raise Biomart::BiomartError Raised for any other unhandled error
+  def request( params )
+    raise ArgumentError if !params.is_a?(Hash) || params.empty?
+    
     if params[:url] =~ / /
       params[:url].gsub!(" ","+")
     end

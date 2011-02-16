@@ -37,6 +37,8 @@ module Biomart
     
     # Returns a hash (keyed by the biomart 'internal_name' for the filter) 
     # of all of the Biomart::Filter objects belonging to this dataset.
+    # 
+    # @return [Hash] A hash of Biomart::Filter objects keyed by 'internal_name'
     def filters
       if @filters.empty?
         fetch_configuration()
@@ -46,6 +48,8 @@ module Biomart
     
     # Returns an array of the filter names (biomart 'internal_name') 
     # for this dataset.
+    # 
+    # @return [Array] An array of filters (their 'internal_name's)
     def list_filters
       if @filters.empty?
         fetch_configuration()
@@ -55,6 +59,8 @@ module Biomart
     
     # Returns a hash (keyed by the biomart 'internal_name' for the attribute) 
     # of all of the Biomart::Attribute objects belonging to this dataset.
+    # 
+    # @return [Hash] A hash of Biomart::Attribute objects keyed by 'internal_name'
     def attributes
       if @attributes.empty?
         fetch_configuration()
@@ -64,6 +70,8 @@ module Biomart
     
     # Returns an array of the attribute names (biomart 'internal_name') 
     # for this dataset.
+    # 
+    # @return [Array] An array of attributes (their 'internal_name's)
     def list_attributes
       if @attributes.empty?
         fetch_configuration()
@@ -73,13 +81,16 @@ module Biomart
     
     # Function to perform a Biomart count.  Returns an integer value for 
     # the result of the count query.
-    #
-    # optional arguments:
+    # 
+    # arguments:
     # 
     #   {
-    #     :timeout => integer,     # set a timeout length for the request (secs)
-    #     :filters => {}           # hash of key-value pairs (filter => search term)
+    #     :timeout => integer,     # set a timeout length for the request (secs) - optional
+    #     :filters => {}           # hash of key-value pairs (filter => search term) - optional
     #   }
+    # 
+    # @param [Hash] args The arguments hash
+    # @raise Biomart::ArgumentError Raised when un-supported arguments are passed
     def count( args={} )
       if args[:federate]
         raise Biomart::ArgumentError, "You cannot federate a count query."
@@ -136,6 +147,10 @@ module Biomart
     #
     # But with the :process_results option will return an array of hashes, 
     # where each hash represents a row of results (keyed by the attribute name).
+    # 
+    # @param [Hash] args The arguments hash
+    # @return [Hash/Array] Will return a hash by default (of unprocessed data), or will return an array of hashes
+    # @raise Biomart::ArgumentError Raised if incorrect arguments are passed
     def search( args={} )
       if args[:required_attributes] and !args[:required_attributes].is_a?(Array)
         raise Biomart::ArgumentError, "The :required_attributes option must be passed as an array."
@@ -154,7 +169,10 @@ module Biomart
       return result
     end
     
-    # Utility function to build the Biomart query XML
+    # Utility function to build the Biomart query XML - used by #count and #search.
+    #
+    # @see #count
+    # @see #search
     def generate_xml( args={} )
       biomart_xml = ""
       xml = Builder::XmlMarkup.new( :target => biomart_xml, :indent => 2 )
@@ -184,7 +202,8 @@ module Biomart
     end
     
     # Simple heartbeat function to test that a Biomart server is online.
-    # Returns true/false.
+    #
+    # @return [Boolean] true/false
     def alive?
       server = Biomart::Server.new( @url )
       return server.alive?

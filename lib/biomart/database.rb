@@ -20,6 +20,8 @@ module Biomart
     
     # Returns an array of the dataset names (biomart 'name') 
     # for this dataset.
+    # 
+    # @return [Array] An array of dataset names
     def list_datasets
       if @datasets.empty?
         fetch_datasets
@@ -29,6 +31,8 @@ module Biomart
     
     # Returns a hash (keyed by the biomart 'name' for the dataset) 
     # of all of the Biomart::Dataset objects belonging to this server.
+    # 
+    # @return [Hash] A hash of Biomart::Dataset objects keyed by 'name'
     def datasets
       if @datasets.empty?
         fetch_datasets
@@ -38,6 +42,8 @@ module Biomart
     
     # Returns true / false if this database is visbile in the 
     # default MartView interface.
+    # 
+    # @return [Boolean] true/false
     def visible?
       @visible
     end
