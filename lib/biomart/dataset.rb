@@ -251,9 +251,10 @@ module Biomart
               raise Biomart::ArgumentError, "The filter '#{name}' does not exist" if dataset.filters[name].nil?
               
               if dataset.filters[name].type == 'boolean'
-                if [true,'included','only'].include?(value.downcase)
+                value = value.downcase if value.is_a? String
+                if [true,'included','only'].include?(value)
                   xml.Filter( :name => name, :excluded => '0' )
-                elsif [false,'excluded'].include?(value.downcase)
+                elsif [false,'excluded'].include?(value)
                   xml.Filter( :name => name, :excluded => '1' )
                 else
                   raise Biomart::ArgumentError, "The boolean filter '#{name}' can only accept 'true/included/only' or 'false/excluded' arguments."
