@@ -217,17 +217,17 @@ module Biomart
         url = @url + "?type=configuration&dataset=#{@name}"
         document = REXML::Document.new( request( :url => url ) )
 
-        # Top-Level filters...
-        REXML::XPath.each( document, '//FilterDescription' ) do |f|
-          unless f.attributes["displayType"].eql? "container"
-            @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
-          end
-        end
-        
-        # Filters nested inside containers...
-        REXML::XPath.each( document, '//FilterDescription/Option' ) do |f|
-          if f.attributes["displayType"] != nil
-            @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
+        # Filters...
+        ['//FilterDescription','//FilterDescription/Option'].each do |filter_xpath|
+          REXML::XPath.each( document, filter_xpath ) do |f|
+            if f.attributes["displayType"] != nil
+              next if f.attributes["displayType"] == "container"
+              @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
+            else f.attributes["pointerFilter"] != nil
+              pointer_filter = Filter.new( f.attributes )
+              @filters[ pointer_filter.name ]           = pointer_filter
+              @filters[ pointer_filter.pointer_filter ] = pointer_filter
+            end
           end
         end
         

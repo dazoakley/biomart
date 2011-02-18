@@ -49,6 +49,7 @@ class BiomartTest < Test::Unit::TestCase
       @ensembl_var = Biomart::Dataset.new( "http://www.ensembl.org/biomart", { :name => "hsapiens_snp" } )
       @emma        = Biomart::Dataset.new( "http://www.emmanet.org/biomart", { :name => "strains" } )
       @dcc         = Biomart::Dataset.new( "http://www.knockoutmouse.org/biomart", { :name => "dcc" } )
+      @mgi         = Biomart::Dataset.new( "http://biomart.informatics.jax.org/biomart", { :name => "markers" } )
     end
     
     should "have basic metadata" do
@@ -60,6 +61,7 @@ class BiomartTest < Test::Unit::TestCase
     should "have filters" do
       assert( @htgt_targ.list_filters.is_a?( Array ), "Biomart::Dataset.list_filters is not returning an array." )
       assert( @htgt_targ.list_filters.include?( "ensembl_gene_id" ), "Biomart::Dataset filter parsing is off - ensembl_gene_id is not in htgt_targ!" )
+      assert( @mgi.list_filters.include?( "ancestor_term_1023_filter" ), "Biomart::Dataset filter parsing is off - ancestor_term_1023_filter is not in mgi markers!" )
       assert( @kermits.filters["ensembl_gene_id"].is_a?( Biomart::Filter ), "Biomart::Dataset is not creating Biomart::Filter objects." )
     end
     

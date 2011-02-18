@@ -2,7 +2,7 @@ module Biomart
   # Class representation for a biomart filter. 
   # Will belong to a Biomart::Dataset.
   class Filter
-    attr_reader :name, :display_name, :default_value, :qualifier, :type
+    attr_reader :name, :display_name, :default_value, :qualifier, :type, :pointer_dataset, :pointer_filter
     
     def initialize(args)
       @name            = args["internalName"]
@@ -13,6 +13,10 @@ module Biomart
       @qualifier       = args["qualifier"]
       @type            = args["type"]
       @multiple_values = args["multipleValues"] ? true : false
+      
+      @pointer_dataset   = args["pointerDataset"]
+      @pointer_filter    = args["pointerFilter"]
+      @pointer_interface = args["pointerInterface"]
       
       @type.downcase! unless @type.nil?
     end
