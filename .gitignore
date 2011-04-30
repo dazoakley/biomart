@@ -4,3 +4,4 @@ pkg/*
 simplecov*
 tmp/*.json
 tmp/metric_fu*
+test/vcr_cassettes*

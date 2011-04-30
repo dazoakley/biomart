@@ -1,22 +1,32 @@
 PATH
   remote: .
   specs:
-    biomart (0.2.1)
-      builder
+    biomart (0.2.2)
+      builder (>= 3.0)
 
 GEM
   remote: http://rubygems.org/
   specs:
-    builder (2.1.2)
+    addressable (2.2.4)
+    builder (3.0.0)
+    crack (0.1.8)
+    rake (0.8.7)
     shoulda (2.11.3)
     simplecov (0.4.0)
       simplecov-html (~> 0.4.0)
     simplecov-html (0.4.3)
+    vcr (1.7.2)
+    webmock (1.6.2)
+      addressable (>= 2.2.2)
+      crack (>= 0.1.7)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   biomart!
+  rake
   shoulda (>= 2.10)
   simplecov
+  vcr
+  webmock
