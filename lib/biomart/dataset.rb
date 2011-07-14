@@ -337,7 +337,7 @@ module Biomart
         else
           # Ruby >= 1.9 CSV code
           begin
-            parsed_data = CSV.parse( tsv, { :col_sep => "\t" } )
+            parsed_data = CSV.parse( tsv, { :col_sep => "\t", :skip_blanks => true } )
           rescue CSV::MalformedCSVError => e
             parsed_data = parse_tsv_line_by_line( headers.size, tsv )
           end
@@ -378,11 +378,11 @@ module Biomart
           
           if CSV.const_defined? :Reader
             # Ruby < 1.9 CSV code
-            elements = CSV::parse_line( line, "\t" )
+            elements = CSV::parse_line( line, "\t" ) || []
           else
             # Ruby >= 1.9 CSV code
             begin
-              elements = CSV::parse_line( line, { :col_sep => "\t" } )
+              elements = CSV::parse_line( line, { :col_sep => "\t" } ) || []
             rescue CSV::MalformedCSVError => e
               elements = []
             end

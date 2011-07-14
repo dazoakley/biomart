@@ -46,6 +46,7 @@ class BiomartTest < Test::Unit::TestCase
       @htgt_trap   = @htgt.datasets["htgt_trap"]
       @kermits     = @htgt.datasets["kermits"]
       @ensembl     = @htgt.datasets["mmusculus_gene_ensembl"]
+      @phenotyping = @htgt.datasets["phenotyping"]
       @ensembl_var = Biomart::Dataset.new( "http://www.ensembl.org/biomart", { :name => "hsapiens_snp" } )
       @emma        = Biomart::Dataset.new( "http://www.emmanet.org/biomart", { :name => "strains" } )
       @dcc         = Biomart::Dataset.new( "http://www.knockoutmouse.org/biomart", { :name => "dcc" } )
@@ -75,11 +76,11 @@ class BiomartTest < Test::Unit::TestCase
       htgt_count = @htgt_targ.count()
       assert( htgt_count.is_a?( Integer ), "Biomart::Dataset.count is not returning integers." )
       assert( htgt_count > 0, "Biomart::Dataset.count is returning zero - this is wrong!" )
-
+    
       htgt_count_single_filter = @htgt_targ.count( :filters => { "is_eucomm" => "1" } )
       assert( htgt_count_single_filter.is_a?( Integer ), "Biomart::Dataset.count (with single filter) is not returning integers." )
       assert( htgt_count_single_filter > 0, "Biomart::Dataset.count (with single filter) is returning zero - this is wrong!" )
-
+    
       htgt_count_single_filter_group_value = @htgt_targ.count( :filters => { "marker_symbol" => ["Cbx1","Cbx7","Art4"] } )
       assert( htgt_count_single_filter_group_value.is_a?( Integer ), "Biomart::Dataset.count (with single filter, group value) is not returning integers." )
       assert( htgt_count_single_filter_group_value > 0, "Biomart::Dataset.count (with single filter, group value) is returning zero - this is wrong!" )
@@ -89,12 +90,12 @@ class BiomartTest < Test::Unit::TestCase
       search = @htgt_trap.search()
       assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash." )
       assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array." )
-
+    
       search1 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :process_results => true )
       assert( search1.is_a?( Array ), "Biomart::Dataset.search (filters defined with processing) is not returning an array." )
       assert( search1.first.is_a?( Hash ), "Biomart::Dataset.search (filters defined with processing) is not returning an array of hashes." )
       assert( search1.first["marker_symbol"] == "Cbx1", "Biomart::Dataset.search (filters defined with processing) is not returning the correct info." )
-
+    
       search2 = @htgt_targ.search( :filters => { "marker_symbol" => "Cbx1" }, :attributes => ["marker_symbol","ensembl_gene_id"], :process_results => true )
       assert( search2.is_a?( Array ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array." )
       assert( search2.first.is_a?( Hash ), "Biomart::Dataset.search (filters and attributes defined with processing) is not returning an array of hashes." )
@@ -143,6 +144,20 @@ class BiomartTest < Test::Unit::TestCase
       assert( search2.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash. (EMMA Query)" )
       assert( search2[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array. (EMMA Query)" )
       assert( search2[:data].size > 0, "Biomart::Dataset.search[:data] for poorly formatted TSV data is empty. (EMMA Query)" )
+      
+      search3 = @phenotyping.search(
+        :timeout    => 240,
+        :filters    => {},
+        :attributes => [
+          'param_level_heatmap_colony_prefix',
+          'param_level_heatmap_mp_id',
+          'param_level_heatmap_mp_term'
+        ]
+      )
+      
+      assert( search3.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash. (MGP Phenotyping Query)" )
+      assert( search3[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array. (MGP Phenotyping Query)" )
+      assert( search3[:data].size > 0, "Biomart::Dataset.search[:data] for poorly formatted TSV data is empty. (MGP Phenotyping Query)" )
     end
     
     should "perform federated search queries" do
@@ -169,7 +184,7 @@ class BiomartTest < Test::Unit::TestCase
       assert( results[:data].is_a?(Array), "Biomart::Dataset.search[:data] is not returning an array. [federated search]" )
       assert( results[:data][0].size === 3, "Biomart::Dataset.search[:data] is not returning 3 attributes. [federated search]" )
       assert( results[:headers].size === 3, "Biomart::Dataset.search[:headers] is not returning 3 elements. [federated search]" )
-
+    
       assert_raise( Biomart::ArgumentError ) { @htgt_targ.count( search_opts ) }
       
       assert_raise Biomart::ArgumentError do
@@ -260,7 +275,8 @@ class BiomartTest < Test::Unit::TestCase
       search_opts = {
         :filters         => { 'with_variation_annotation' => true, 'ensembl_gene' => 'ENSG00000244734' },
         :attributes      => [ 'refsnp_id','chr_name','chrom_start' ],
-        :process_results => true
+        :process_results => true,
+        :timeout         => 1000
       }
       
       true_results = {}
