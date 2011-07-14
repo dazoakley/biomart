@@ -223,7 +223,7 @@ module Biomart
             if f.attributes["displayType"] != nil
               next if f.attributes["displayType"] == "container"
               @filters[ f.attributes["internalName"] ] = Filter.new( f.attributes )
-            else f.attributes["pointerFilter"] != nil
+            elsif f.attributes["pointerFilter"] != nil
               pointer_filter = Filter.new( f.attributes )
               @filters[ pointer_filter.name ]           = pointer_filter
               @filters[ pointer_filter.pointer_filter ] = pointer_filter

@@ -22,4 +22,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("builder", [">= 3.0"])
   s.add_development_dependency("shoulda", [">= 2.10"])
   s.add_development_dependency("simplecov", [">= 0"])
+  s.add_development_dependency("awesome_print", [">= 0"])
 end
