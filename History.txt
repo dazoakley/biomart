@@ -1,4 +1,10 @@
-=== 0.2.1 2011-02-18
+=== 0.2.3 2011-07-14
+
+* 2 minor bugfixes:
+  * More robust parsing of the TSV from biomart
+  * Stop creating lots of unnecessary filter objects
+
+=== 0.2.2 2011-02-18
 
 * 1 major bugfix:
   * More forceful filter checking in 0.2.1 was causing queries on 'pointerFilters' to error out unnecessarily.

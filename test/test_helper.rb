@@ -15,6 +15,7 @@ end
 require 'biomart'
 require 'shoulda'
 require 'vcr'
+require 'awesome_print'
 
 # Set-up VCR for mocking up web requests.
 VCR.config do |c|

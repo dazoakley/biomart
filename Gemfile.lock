@@ -11,6 +11,7 @@ GEM
     builder (3.0.0)
     crack (0.1.8)
     rake (0.8.7)
+    awesome_print (0.4.0)
     shoulda (2.11.3)
     simplecov (0.4.0)
       simplecov-html (~> 0.4.0)
@@ -24,6 +25,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
   biomart!
   rake
   shoulda (>= 2.10)

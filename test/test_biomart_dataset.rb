@@ -231,7 +231,8 @@ class BiomartDatasetTest < Test::Unit::TestCase
       search_opts = {
         :filters         => { 'with_variation_annotation' => true, 'ensembl_gene' => 'ENSG00000244734' },
         :attributes      => [ 'refsnp_id','chr_name','chrom_start' ],
-        :process_results => true
+        :process_results => true,
+        :timeout => 2000
       }
       
       true_results = {}
