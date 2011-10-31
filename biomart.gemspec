@@ -19,12 +19,13 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
   
-  s.add_runtime_dependency("builder", [">= 3.0"])
-  s.add_development_dependency("rake", [">= 0"])
-  s.add_development_dependency("shoulda", [">= 2.10"])
-  s.add_development_dependency("simplecov", [">= 0"])
-  s.add_development_dependency("awesome_print", [">= 0"])
-  s.add_development_dependency("vcr", [">= 0"])
-  s.add_development_dependency("webmock", [">= 0"])
-  s.add_development_dependency("yard", [">= 0"])
+  s.add_runtime_dependency "builder", [">= 3.0"]
+  s.add_development_dependency "rake"
+  s.add_development_dependency "shoulda", [">= 2.10"]
+  s.add_development_dependency "simplecov"
+  s.add_development_dependency "simplecov-rcov"
+  s.add_development_dependency "awesome_print"
+  s.add_development_dependency "vcr"
+  s.add_development_dependency "webmock"
+  s.add_development_dependency "yard"
 end

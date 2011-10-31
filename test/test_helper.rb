@@ -6,9 +6,23 @@ require 'bundler/setup'
 
 # Set-up SimpleCov (code coverage tool for Ruby 1.9)
 if /^1.9/ === RUBY_VERSION
-  require 'simplecov'
-  SimpleCov.start do
-    coverage_dir 'simplecov'
+  begin
+    require 'simplecov'
+    require 'simplecov-rcov'
+
+    class SimpleCov::Formatter::MergedFormatter
+      def format(result)
+         SimpleCov::Formatter::HTMLFormatter.new.format(result)
+         SimpleCov::Formatter::RcovFormatter.new.format(result)
+      end
+    end
+
+    SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
+    SimpleCov.start do
+      add_filter "/test/"
+    end
+  rescue LoadError
+    puts "[ERROR] Unable to load 'simplecov' - please run 'bundle install'"
   end
 end
 
