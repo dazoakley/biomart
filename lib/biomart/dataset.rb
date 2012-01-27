@@ -3,9 +3,9 @@ module Biomart
   # Can belong to a Biomart::Database and a Biomart::Server.
   class Dataset
     include Biomart
-    
+
     attr_reader :name, :display_name, :visible
-    
+
     # Creates a new Biomart::Dataset object.
     #
     # @param [String] url The URL location of the biomart server.
@@ -17,27 +17,27 @@ module Biomart
     #     :name         => String,     #
     #     "name"        => String,     #
     #     :display_name => {}          #
-    #     
+    #
     #   }
     def initialize( url, args )
       @url = url or raise ArgumentError, "must pass :url"
       unless @url =~ /martservice/
         @url = @url + "/martservice"
       end
-      
+
       @name         = args["name"] || args[:name]
       @display_name = args["displayName"] || args[:display_name]
       @visible      = ( args["visible"] || args[:visible] ) ? true : false
-      
+
       @filters      = {}
       @attributes   = {}
       @importables  = {}
       @exportables  = {}
     end
-    
-    # Returns a hash (keyed by the biomart 'internal_name' for the filter) 
+
+    # Returns a hash (keyed by the biomart 'internal_name' for the filter)
     # of all of the Biomart::Filter objects belonging to this dataset.
-    # 
+    #
     # @return [Hash] A hash of Biomart::Filter objects keyed by 'internal_name'
     def filters
       if @filters.empty?
@@ -45,10 +45,10 @@ module Biomart
       end
       return @filters
     end
-    
-    # Returns an array of the filter names (biomart 'internal_name') 
+
+    # Returns an array of the filter names (biomart 'internal_name')
     # for this dataset.
-    # 
+    #
     # @return [Array] An array of filters (their 'internal_name's)
     def list_filters
       if @filters.empty?
@@ -56,10 +56,10 @@ module Biomart
       end
       return @filters.keys
     end
-    
-    # Returns a hash (keyed by the biomart 'internal_name' for the attribute) 
+
+    # Returns a hash (keyed by the biomart 'internal_name' for the attribute)
     # of all of the Biomart::Attribute objects belonging to this dataset.
-    # 
+    #
     # @return [Hash] A hash of Biomart::Attribute objects keyed by 'internal_name'
     def attributes
       if @attributes.empty?
@@ -67,10 +67,10 @@ module Biomart
       end
       return @attributes
     end
-    
-    # Returns an array of the attribute names (biomart 'internal_name') 
+
+    # Returns an array of the attribute names (biomart 'internal_name')
     # for this dataset.
-    # 
+    #
     # @return [Array] An array of attributes (their 'internal_name's)
     def list_attributes
       if @attributes.empty?
@@ -78,45 +78,45 @@ module Biomart
       end
       return @attributes.keys
     end
-    
-    # Function to perform a Biomart count.  Returns an integer value for 
+
+    # Function to perform a Biomart count.  Returns an integer value for
     # the result of the count query.
-    # 
+    #
     # arguments:
-    # 
+    #
     #   {
     #     :timeout => integer,     # set a timeout length for the request (secs) - optional
     #     :filters => {}           # hash of key-value pairs (filter => search term) - optional
     #   }
-    # 
+    #
     # @param [Hash] args The arguments hash
     # @raise Biomart::ArgumentError Raised when un-supported arguments are passed
     def count( args={} )
       if args[:federate]
         raise Biomart::ArgumentError, "You cannot federate a count query."
       end
-      
+
       if args[:required_attributes]
         raise Biomart::ArgumentError, "The :required_attributes option is not allowed on count queries."
       end
-      
+
       result = request(
         :method  => 'post',
         :url     => @url,
         :timeout => args[:timeout],
         :query   => generate_xml(
-          :filters    => args[:filters], 
-          :attributes => args[:attributes], 
+          :filters    => args[:filters],
+          :attributes => args[:attributes],
           :count      => "1"
         )
       )
       return result.to_i
     end
-    
+
     # Function to perform a Biomart search.
-    # 
+    #
     # optional arguments:
-    # 
+    #
     #   {
     #     :process_results     => true/false,   # convert search results to object
     #     :timeout             => integer,      # set a timeout length for the request (secs)
@@ -132,22 +132,22 @@ module Biomart
     #     ]
     #   }
     #
-    # Note, if you do not pass any filters or attributes arguments, the defaults 
+    # Note, if you do not pass any filters or attributes arguments, the defaults
     # for the dataset shall be used.
     #
-    # Also, using the :required_attributes option - this performs AND logic and will require 
+    # Also, using the :required_attributes option - this performs AND logic and will require
     # data to be returned in all of the listed attributes in order for it to be returned.
     #
     # By default will return a hash with the following:
-    # 
+    #
     #   {
     #     :headers => [],   # array of headers
     #     :data    => []    # array of arrays containing search results
     #   }
     #
-    # But with the :process_results option will return an array of hashes, 
+    # But with the :process_results option will return an array of hashes,
     # where each hash represents a row of results (keyed by the attribute name).
-    # 
+    #
     # @param [Hash] args The arguments hash
     # @return [Hash/Array] Will return a hash by default (of unprocessed data), or will return an array of hashes
     # @raise Biomart::ArgumentError Raised if incorrect arguments are passed
@@ -155,20 +155,20 @@ module Biomart
       if args[:required_attributes] and !args[:required_attributes].is_a?(Array)
         raise Biomart::ArgumentError, "The :required_attributes option must be passed as an array."
       end
-      
+
       response = request(
         :method  => 'post',
         :url     => @url,
         :timeout => args[:timeout],
         :query   => generate_xml( process_xml_args(args) )
       )
-      
+
       result = process_tsv( args, response )
       result = filter_data_rows( args, result ) if args[:required_attributes]
       result = conv_results_to_a_of_h( result ) if args[:process_results]
       return result
     end
-    
+
     # Utility function to build the Biomart query XML - used by #count and #search.
     #
     # @see #count
@@ -176,18 +176,18 @@ module Biomart
     def generate_xml( args={} )
       biomart_xml = ""
       xml = Builder::XmlMarkup.new( :target => biomart_xml, :indent => 2 )
-      
+
       xml.instruct!
       xml.declare!( :DOCTYPE, :Query )
       xml.Query( :virtualSchemaName => "default", :formatter => "TSV", :header => "0", :uniqueRows => "1", :count => args[:count], :datasetConfigVersion => "0.6" ) {
         dataset_xml( xml, self, { :filters => args[:filters], :attributes => args[:attributes] } )
-        
+
         if args[:federate]
           args[:federate].each do |joined_dataset|
             unless joined_dataset[:dataset].is_a?(Biomart::Dataset)
               raise Biomart::ArgumentError, "You must pass a Biomart::Dataset object to the :federate[:dataset] option."
             end
-            
+
             dataset_xml(
               xml,
               joined_dataset[:dataset],
@@ -195,12 +195,12 @@ module Biomart
             )
           end
         end
-        
+
       }
-      
+
       return biomart_xml
     end
-    
+
     # Simple heartbeat function to test that a Biomart server is online.
     #
     # @return [Boolean] true/false
@@ -208,10 +208,10 @@ module Biomart
       server = Biomart::Server.new( @url )
       return server.alive?
     end
-    
+
     private
-    
-      # Utility function to retrieve and process the configuration 
+
+      # Utility function to retrieve and process the configuration
       # xml for a dataset
       def fetch_configuration
         url = @url + "?type=configuration&dataset=#{@name}"
@@ -230,14 +230,14 @@ module Biomart
             end
           end
         end
-        
+
         # Attributes are much simpler...
         REXML::XPath.each( document, '//AttributeDescription' ) do |a|
           @attributes[ a.attributes["internalName"] ] = Attribute.new( a.attributes )
         end
       end
-      
-      # Utility function to process and test the arguments passed for 
+
+      # Utility function to process and test the arguments passed for
       # the xml query.
       def process_xml_args( args={} )
         xml_args = {
@@ -259,8 +259,8 @@ module Biomart
 
         return xml_args
       end
-      
-      # Helper function to produce the portion of the biomart xml for 
+
+      # Helper function to produce the portion of the biomart xml for
       # a dataset query.
       def dataset_xml( xml, dataset, args )
         xml.Dataset( :name => dataset.name, :interface => "default" ) {
@@ -268,7 +268,7 @@ module Biomart
           if args[:filters]
             args[:filters].each do |name,value|
               raise Biomart::ArgumentError, "The filter '#{name}' does not exist" if dataset.filters[name].nil?
-              
+
               if dataset.filters[name].type == 'boolean'
                 value = value.downcase if value.is_a? String
                 if [true,'included','only'].include?(value)
@@ -311,13 +311,13 @@ module Biomart
 
         }
       end
-      
-      # Utility function to transform the tab-separated data retrieved 
+
+      # Utility function to transform the tab-separated data retrieved
       # from the Biomart search query into a ruby object.
       def process_tsv( args, tsv )
         headers     = []
         parsed_data = []
-        
+
         append_header_attributes_for_tsv( headers, self, args[:attributes] )
 
         if args[:federate]
@@ -342,14 +342,14 @@ module Biomart
             parsed_data = parse_tsv_line_by_line( headers.size, tsv )
           end
         end
-        
+
         return {
           :headers => headers,
           :data    => parsed_data
         }
       end
-      
-      # Helper function to append the attribute names to the 'headers' array 
+
+      # Helper function to append the attribute names to the 'headers' array
       # for processing the returned results.
       def append_header_attributes_for_tsv( headers, dataset, attributes )
         if attributes
@@ -364,18 +364,18 @@ module Biomart
           end
         end
       end
-      
-      # Utility function to process TSV formatted data that raises errors. (Biomart 
-      # has a habit of serving out this...) First attempts to use the CSV modules 
-      # 'parse_line' function to read in the data, if that fails, tries to use split 
+
+      # Utility function to process TSV formatted data that raises errors. (Biomart
+      # has a habit of serving out this...) First attempts to use the CSV modules
+      # 'parse_line' function to read in the data, if that fails, tries to use split
       # to recover the data.
       def parse_tsv_line_by_line( expected_row_size, tsv )
         parsed_data = []
-        
+
         data_by_line = tsv.split("\n")
         data_by_line.each do |line|
           elements = []
-          
+
           if CSV.const_defined? :Reader
             # Ruby < 1.9 CSV code
             elements = CSV::parse_line( line, "\t" ) || []
@@ -387,17 +387,17 @@ module Biomart
               elements = []
             end
           end
-          
+
           if elements.size == 0
             # This is a bad line (causing the above Exception), try and use split to recover.
             elements = line.split("\t")
             if line =~ /\t$/
               # If the last attribute resturn is empty add a nil
-              # value to the array as it would have been missed 
+              # value to the array as it would have been missed
               # by the split function!
               elements.push(nil)
             end
-            
+
             # Substitute blank strings for nils
             elements.map! do |elem|
               if elem === ""
@@ -406,7 +406,7 @@ module Biomart
                 elem
               end
             end
-            
+
             # Add a safety clause...
             if elements.size === expected_row_size
               parsed_data.push(elements)
@@ -415,12 +415,12 @@ module Biomart
             parsed_data.push(elements)
           end
         end
-        
+
         return parsed_data
       end
-      
+
       # Utility function to quickly convert a search result into an array of hashes
-      # (keyed by the attribute name) for easier processing - this is not done by 
+      # (keyed by the attribute name) for easier processing - this is not done by
       # default on all searches as this can cause a large overhead on big data returns.
       def conv_results_to_a_of_h( search_results )
         result_objects = []
@@ -435,8 +435,8 @@ module Biomart
 
         return result_objects
       end
-      
-      # Utility function to remove data rows from a search result that do not include 
+
+      # Utility function to remove data rows from a search result that do not include
       # the :required_attributes.
       def filter_data_rows( args, result )
         # Get the list of attributes searched for...

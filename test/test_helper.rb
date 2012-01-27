@@ -40,11 +40,11 @@ VCR.config do |c|
   else
     c.cassette_library_dir = 'test/vcr_cassettes_ruby1.9.2+'
   end
-  
+
   c.stub_with                :webmock
   c.ignore_localhost         = true
-  c.default_cassette_options = { 
-    :record            => :new_episodes, 
+  c.default_cassette_options = {
+    :record            => :new_episodes,
     :match_requests_on => [:uri, :method, :body]
   }
 end

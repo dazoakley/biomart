@@ -8,42 +8,42 @@ require "rubygems"
 require "builder"
 
 module Biomart
-  # This is the base Biomart error/exception class. Rescue it if 
+  # This is the base Biomart error/exception class. Rescue it if
   # you want to catch any exceptions that this code might raise.
   class BiomartError < StandardError
     attr_reader :data
-    
+
     def initialize(data)
       @data = data
       super
     end
   end
-  
+
   # Error class representing HTTP errors.
   class HTTPError      < BiomartError; end
-  
-  # Error class representing biomart filter errors.  Usually raised 
-  # when a request is made for a incorrectly named (or non-existent) 
+
+  # Error class representing biomart filter errors.  Usually raised
+  # when a request is made for a incorrectly named (or non-existent)
   # filter.
   class FilterError    < BiomartError; end
-  
-  # Error class representing biomart attribute errors.  Usually raised 
-  # when a request is made for a incorrectly named (or non-existent) 
+
+  # Error class representing biomart attribute errors.  Usually raised
+  # when a request is made for a incorrectly named (or non-existent)
   # attribute.
   class AttributeError < BiomartError; end
-  
-  # Error class representing biomart dataset errors.  Usually raised 
-  # when a request is made for a incorrectly named (or non-existent) 
+
+  # Error class representing biomart dataset errors.  Usually raised
+  # when a request is made for a incorrectly named (or non-existent)
   # dataset.
   class DatasetError   < BiomartError; end
-  
-  # Error class representing errors in the arguments being passed 
+
+  # Error class representing errors in the arguments being passed
   # to the api.
   class ArgumentError < BiomartError; end
-  
-  # Centralised request function for handling all of the HTTP requests 
+
+  # Centralised request function for handling all of the HTTP requests
   # to the biomart servers.
-  # 
+  #
   # @param [Hash] params Parameters to be passed to the request
   # @return [String] The response body
   #
@@ -63,16 +63,16 @@ module Biomart
   # @raise Biomart::BiomartError Raised for any other unhandled error
   def request( params )
     raise ArgumentError if !params.is_a?(Hash) || params.empty?
-    
+
     if params[:url] =~ / /
       params[:url].gsub!(" ","+")
     end
-    
+
     uri          = URI.parse( params[:url] )
     client       = net_http_client()
     req          = nil
     response     = nil
-    
+
     case params[:method]
     when 'post'
       req           = Net::HTTP::Post.new(uri.path)
@@ -80,7 +80,7 @@ module Biomart
     else
       req           = Net::HTTP::Get.new(uri.request_uri)
     end
-    
+
     client.start(uri.host, uri.port) do |http|
       if Biomart.timeout or params[:timeout]
         http.read_timeout = params[:timeout] ? params[:timeout] : Biomart.timeout
@@ -88,25 +88,25 @@ module Biomart
       end
       response = http.request(req)
     end
-    
+
     response_code = response.code
     response_body = response.body
-    
+
     if defined? Encoding && response_body.encoding == Encoding::ASCII_8BIT
       response_body = response_body.force_encoding(Encoding::UTF_8).encode
     end
-    
+
     check_response( response_body, response_code )
-    
+
     return response_body
   end
-  
+
   class << self
     attr_accessor :proxy, :timeout
   end
-  
+
   private
-    
+
     # Utility function to create a Net::HTTP object.
     def net_http_client
       client = Net::HTTP
@@ -116,28 +116,28 @@ module Biomart
       end
       return client
     end
-    
-    # Utility function to determine if we need to use a proxy. If yes, 
+
+    # Utility function to determine if we need to use a proxy. If yes,
     # returns the proxy url, if no, returns false.
     def proxy_url
       if Biomart.proxy or ENV['http_proxy'] or ENV['HTTP_PROXY']
         proxy_uri = Biomart.proxy
         proxy_uri ||= ENV['http_proxy']
         proxy_uri ||= ENV['HTTP_PROXY']
-        
+
         return proxy_uri
       else
         return false
       end
     end
-    
-    # Utility function to test the response from a http request. 
+
+    # Utility function to test the response from a http request.
     # Raises errors if appropriate.
     def check_response( body, code )
       # Process the response code/body to catch errors.
       if code.is_a?(String) then code = code.to_i end
-      
-      if code != 200 
+
+      if code != 200
         raise HTTPError.new(code), "HTTP error #{code}, please check your biomart server and URL settings."
       else
         if body =~ /ERROR/
@@ -153,7 +153,7 @@ module Biomart
         end
       end
     end
-  
+
 end
 
 directory = File.expand_path(File.dirname(__FILE__))

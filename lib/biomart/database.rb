@@ -3,24 +3,24 @@ module Biomart
   # Will contain many Biomart::Dataset objects, and belong to a Biomart::Server.
   class Database
     include Biomart
-    
+
     attr_reader :name, :display_name, :visible
-    
+
     def initialize( url, args )
       @url = url or raise ArgumentError, "must pass :url"
       unless @url =~ /martservice/
         @url = @url + "/martservice"
       end
-      
+
       @name         = args["name"] || args[:name]
       @display_name = args["displayName"] || args[:display_name]
       @visible      = ( args["visible"] || args[:visible] ) ? true : false
       @datasets     = {}
     end
-    
-    # Returns an array of the dataset names (biomart 'name') 
+
+    # Returns an array of the dataset names (biomart 'name')
     # for this dataset.
-    # 
+    #
     # @return [Array] An array of dataset names
     def list_datasets
       if @datasets.empty?
@@ -28,10 +28,10 @@ module Biomart
       end
       return @datasets.keys
     end
-    
-    # Returns a hash (keyed by the biomart 'name' for the dataset) 
+
+    # Returns a hash (keyed by the biomart 'name' for the dataset)
     # of all of the Biomart::Dataset objects belonging to this server.
-    # 
+    #
     # @return [Hash] A hash of Biomart::Dataset objects keyed by 'name'
     def datasets
       if @datasets.empty?
@@ -39,24 +39,24 @@ module Biomart
       end
       return @datasets
     end
-    
-    # Returns true / false if this database is visbile in the 
+
+    # Returns true / false if this database is visbile in the
     # default MartView interface.
-    # 
+    #
     # @return [Boolean] true/false
     def visible?
       @visible
     end
-    
+
     private
-    
-      # Utility method to do the webservice call to the biomart server 
+
+      # Utility method to do the webservice call to the biomart server
       # and collate/build the information about the datasets.
       def fetch_datasets
         url = @url + "?type=datasets&mart=#{@name}"
         document = request( :url => url )
         tsv_data = []
-        
+
         if CSV.const_defined? :Reader
           # Ruby < 1.9 CSV code
           tsv_data = CSV.parse( document, "\t" )
@@ -64,7 +64,7 @@ module Biomart
           # Ruby >= 1.9 CSV code
           tsv_data = CSV.parse( document, { :col_sep => "\t" } )
         end
-        
+
         tsv_data.each do |t|
           if t[1] and ( t[3] === "1" )
             dataset_attr = {
@@ -76,6 +76,6 @@ module Biomart
           end
         end
       end
-    
+
   end
 end
