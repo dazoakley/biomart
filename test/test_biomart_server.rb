@@ -2,7 +2,7 @@ require 'test_helper'
 
 class BiomartServerTest < Test::Unit::TestCase
   def setup
-    VCR.insert_cassette('test_biomart_server')
+    VCR.insert_cassette('test_biomart')
     @htgt     = Biomart::Server.new('http://www.sanger.ac.uk/htgt/biomart')
     @htgt_alt = Biomart::Server.new('http://www.sanger.ac.uk/htgt/biomart')
   end

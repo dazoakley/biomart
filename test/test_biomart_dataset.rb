@@ -2,7 +2,7 @@ require 'test_helper'
 
 class BiomartDatasetTest < Test::Unit::TestCase
   def setup
-    VCR.insert_cassette('test_biomart_dataset')
+    VCR.insert_cassette('test_biomart')
     @htgt     = Biomart::Server.new('http://www.sanger.ac.uk/htgt/biomart')
     @htgt_alt = Biomart::Server.new('http://www.sanger.ac.uk/htgt/biomart')
   end
@@ -101,19 +101,6 @@ class BiomartDatasetTest < Test::Unit::TestCase
       assert( search.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash. (HTGT Query)" )
       assert( search[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array. (HTGT Query)" )
       assert( search[:data].size > 20, "Biomart::Dataset.search[:data] for poorly formatted TSV data is empty. (HTGT Query)" )
-
-      search2 = @emma.search(
-        :filters    => { "emma_id" => ["EM:03629"] },
-        :attributes => [
-          "emma_id", "international_strain_name", "synonym", "maintained_background",
-          "mutation_main_type", "mutation_sub_type", "alls_form", "genetic_description",
-          "phenotype_description", "reference", "pubmed_id", "availability", "owner"
-        ]
-      )
-
-      assert( search2.is_a?( Hash ), "Biomart::Dataset.search (no options) is not returning a hash. (EMMA Query)" )
-      assert( search2[:data].is_a?( Array ), "Biomart::Dataset.search[:data] (no options) is not returning an array. (EMMA Query)" )
-      assert( search2[:data].size > 0, "Biomart::Dataset.search[:data] for poorly formatted TSV data is empty. (EMMA Query)" )
     end
 
     should "perform federated search queries" do
